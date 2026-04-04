@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+- Sempre que for gerar uma mensagem para commit utilize conventional commits.
+- *Nunca realize os commits*, apenas gere mensagens quando for solicitado.
+- Sempre gere as mensagens de commit em português brasileiro.
+- Sempre analise as mudanças no projeto vi git para gerar a mensagem.

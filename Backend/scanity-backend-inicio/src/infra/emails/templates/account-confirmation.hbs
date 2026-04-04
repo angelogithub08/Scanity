@@ -1,0 +1,19 @@
+<p>{{#if userName}}Olá, {{userName}}! {{else}}Olá! {{/if}}👋</p>
+
+<p>Bem-vindo(a) à nossa plataforma! 🎉</p>
+
+<p>Para completar o seu cadastro e ativar sua conta, clique no botão abaixo:</p>
+
+<p style='text-align: center;'>
+  <a href='{{apiUrl}}/accounts/confirm-account?token={{token}}' class='button'>
+    Confirmar Conta
+  </a>
+</p>
+
+<div class='warning'>
+  <strong>⚠️ Importante:</strong>
+  Se você não criou uma conta em nossa plataforma, ignore este email. Nenhuma
+  conta será criada sem sua confirmação.
+</div>
+
+<p>Estamos animados para ter você conosco! 🚀</p>

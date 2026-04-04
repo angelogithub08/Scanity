@@ -1,0 +1,146 @@
+import type { Ref } from 'vue';
+import { ref } from 'vue';
+import type { CalendarItem } from 'src/interfaces/calendar-items';
+
+export function useCalendar() {
+  const items: Ref<CalendarItem[]> = ref([]);
+  const loading = ref(false);
+  const error = ref<Error | null>(null);
+
+  /**
+   * Carrega itens para o calendário
+   */
+  async function fetchItems(source?: any) {
+    loading.value = true;
+    error.value = null;
+    try {
+      // Aqui você pode implementar a lógica para buscar itens da sua fonte de dados
+      // Por exemplo: const response = await api.getCalendarItems();
+
+      // Simula uma chamada assíncrona
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      if (source && Array.isArray(source)) {
+        // Usar fonte de dados fornecida
+        items.value = source.map(function (item: any) {
+          return {
+            id: item.id || String(Date.now()),
+            title: item.title || 'Sem título',
+            date: item.date || item.start,
+            start: item.start,
+            end: item.end,
+            description: item.description,
+            backgroundColor: item.color || '#1976D2',
+            borderColor: item.color || '#1976D2',
+            textColor: item.textColor || '#FFFFFF',
+            extendedProps: {
+              ...item,
+            },
+          };
+        });
+      } else {
+        // Exemplo de itens padrão se nenhuma fonte for fornecida
+        items.value = [
+          {
+            id: '1',
+            title: 'Item de exemplo 1',
+            date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+          } as CalendarItem,
+          {
+            id: '2',
+            title: 'Item de exemplo 2',
+            date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+          } as CalendarItem,
+        ];
+      }
+    } catch (err) {
+      error.value = err as Error;
+      console.error('Erro ao carregar itens do calendário:', err);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Adiciona um novo item ao calendário
+   */
+  async function addItem(item: CalendarItem) {
+    loading.value = true;
+    error.value = null;
+    try {
+      // Simula uma chamada assíncrona
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Adiciona o item à lista local
+      items.value.push(item);
+      return true;
+    } catch (err) {
+      error.value = err as Error;
+      console.error('Erro ao adicionar item ao calendário:', err);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Atualiza um item existente no calendário
+   */
+  async function updateItem(item: CalendarItem) {
+    loading.value = true;
+    error.value = null;
+    try {
+      // Simula uma chamada assíncrona
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Atualiza o item na lista local
+      const index = items.value.findIndex(function (e) {
+        return e.id === item.id;
+      });
+      if (index !== -1) {
+        items.value[index] = item;
+      }
+      return true;
+    } catch (err) {
+      error.value = err as Error;
+      console.error('Erro ao atualizar item do calendário:', err);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Remove um item do calendário
+   */
+  async function removeItem(id: string) {
+    loading.value = true;
+    error.value = null;
+    try {
+      // Simula uma chamada assíncrona
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Remove o item da lista local
+      items.value = items.value.filter(function (e) {
+        return e.id !== id;
+      });
+      return true;
+    } catch (err) {
+      error.value = err as Error;
+      console.error('Erro ao remover item do calendário:', err);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    items,
+    loading,
+    error,
+    fetchItems,
+    addItem,
+    updateItem,
+    removeItem,
+  };
+}

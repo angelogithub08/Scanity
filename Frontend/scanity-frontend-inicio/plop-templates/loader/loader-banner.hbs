@@ -1,0 +1,32 @@
+<template>
+  <q-banner class="bg-grey-2 text-grey-9 q-mb-md" rounded>
+    <div class="row q-col-gutter-md">
+      <div class="col-12">
+        <div class="q-mb-sm">
+          <q-skeleton type="text" width="40%" class="q-mb-xs" />
+        </div>
+        <div>
+          <q-skeleton type="rect" height="24px" width="100%" class="q-mb-xs" />
+          <q-skeleton type="rect" height="24px" width="100%" class="q-mb-xs" />
+          <q-skeleton type="rect" height="24px" width="100%" class="q-mb-xs" />
+          <q-skeleton type="rect" height="24px" width="100%" class="q-mb-xs" />
+        </div>
+      </div>
+      <div class="col-12 text-center">
+        <q-spinner color="primary" size="32px" class="q-ml-md" />
+        <span class="q-ml-md">Carregando informações...</span>
+      </div>
+    </div>
+  </q-banner>
+</template>
+
+<script setup lang="ts">
+// Componente puramente visual, sem lógica
+</script>
+
+<style scoped>
+.q-banner {
+  min-height: 64px;
+  align-items: center;
+}
+</style> 

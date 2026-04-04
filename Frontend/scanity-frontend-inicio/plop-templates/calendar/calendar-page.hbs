@@ -1,0 +1,240 @@
+<template>
+  <q-page padding>
+    <div class="q-mb-md">
+      <ListPageHeader title="Calendário" @filtrate="handleSearch" @add="showNewItemDialog" />
+    </div>
+
+    <q-card class="calendar-card" flat bordered>
+      <q-card-section class="calendar-container">
+        <q-inner-loading :showing="loading">
+          <q-spinner size="50px" color="primary" />
+        </q-inner-loading>
+        <CalendarComponent
+          :items="items"
+          @dateClick="handleDateClick"
+          @itemClick="handleItemClick"
+        />
+      </q-card-section>
+    </q-card>
+
+    <!-- Dialog para criar novo item quando clicar em uma data -->
+    <q-dialog v-model="newItemDialog">
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Criar Novo Item</div>
+        </q-card-section>
+
+        <q-card-section class="q-gutter-y-md">
+          <q-input v-model="newItem.title" label="Título" outlined />
+          <q-input v-model="newItem.date" label="Data" readonly outlined />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="grey-9" v-close-popup />
+          <q-btn
+            label="Criar"
+            color="primary"
+            text-color="grey-9"
+            @click="createItem"
+            v-close-popup
+            unelevated
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Dialog para detalhes do item -->
+    <q-dialog v-model="itemDetailsDialog">
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Detalhes do Item</div>
+        </q-card-section>
+
+        <q-card-section v-if="selectedItem">
+          <p><strong>Título:</strong> \{{ selectedItem.title }}</p>
+          <p v-if="selectedItem.date"><strong>Data:</strong> \{{ selectedItem.date }}</p>
+          <p v-if="selectedItem.description">
+            <strong>Descrição:</strong> \{{ selectedItem.description }}
+          </p>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Fechar" color="primary" v-close-popup />
+          <q-btn flat label="Editar" color="secondary" @click="editItem" v-close-popup />
+          <q-btn flat label="Excluir" color="negative" @click="confirmDeleteItem" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import CalendarComponent from 'src/components/calendar/CalendarComponent.vue';
+import type { CalendarItem } from 'src/interfaces/calendar-items';
+import { useCalendar } from 'src/composables/useCalendar';
+import ListPageHeader from 'src/components/shared/pages/ListPageHeader.vue';
+
+const $q = useQuasar();
+const { items, loading, fetchItems, addItem, removeItem } = useCalendar();
+
+// Estado para controlar o dialog de novo item
+const newItemDialog = ref(false);
+const newItem = ref<CalendarItem>({
+  id: '',
+  title: '',
+  date: '',
+});
+
+// Estado para controlar o dialog de detalhes do item
+const itemDetailsDialog = ref(false);
+const selectedItem = ref<CalendarItem | null>(null);
+
+// Função para mostrar o dialog de novo item
+function showNewItemDialog() {
+  newItem.value = {
+    id: '',
+    title: '',
+    date: new Date().toISOString().split('T')[0],
+  } as CalendarItem;
+  newItemDialog.value = true;
+}
+
+// Função para lidar com o clique em uma data
+function handleDateClick(arg: any) {
+  newItem.value = {
+    id: '',
+    title: '',
+    date: arg.dateStr,
+  } as CalendarItem;
+  newItemDialog.value = true;
+}
+
+// Função para lidar com o clique em um item
+function handleItemClick(arg: any) {
+  selectedItem.value = {
+    id: arg.event.id,
+    title: arg.event.title,
+    date: arg.event.startStr,
+    description: arg.event.extendedProps?.description || '',
+  };
+  itemDetailsDialog.value = true;
+}
+
+// Função para lidar com a busca
+function handleSearch(searchText: string) {
+  console.log('Buscando por:', searchText);
+  // Implemente a lógica de busca aqui
+}
+
+// Função para criar um novo item
+async function createItem() {
+  if (newItem.value.title && newItem.value.date) {
+    $q.loading.show();
+    try {
+      // Gerar um ID temporário
+      const newId = String(Date.now());
+      const newCalendarItem = {
+        id: newId,
+        title: newItem.value.title,
+        date: newItem.value.date,
+      };
+
+      const success = await addItem(newCalendarItem);
+
+      if (success) {
+        $q.notify({
+          type: 'positive',
+          message: 'Item criado com sucesso!',
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao criar item',
+      });
+    } finally {
+      $q.loading.hide();
+    }
+  }
+}
+
+// Função para editar um item
+function editItem() {
+  if (selectedItem.value) {
+    newItem.value = { ...selectedItem.value };
+    itemDetailsDialog.value = false;
+    newItemDialog.value = true;
+  }
+}
+
+// Função para confirmar a exclusão de um item
+function confirmDeleteItem() {
+  if (!selectedItem.value) return;
+
+  $q.dialog({
+    title: 'Confirmar exclusão',
+    message: 'Tem certeza que deseja excluir este item?',
+    cancel: true,
+    persistent: true,
+  }).onOk(function () {
+    $q.loading.show();
+    try {
+      if (selectedItem.value) {
+        removeItem(selectedItem.value.id)
+          .then(function (success) {
+            if (success) {
+              $q.notify({
+                type: 'positive',
+                message: 'Item excluído com sucesso!',
+              });
+            }
+          })
+          .catch(function (err) {
+            console.error(err);
+            $q.notify({
+              type: 'negative',
+              message: 'Erro ao excluir item',
+            });
+          })
+          .finally(function () {
+            $q.loading.hide();
+          });
+      }
+    } catch (err) {
+      console.error(err);
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao excluir item',
+      });
+      $q.loading.hide();
+    }
+  });
+}
+
+onMounted(async function () {
+  await fetchItems();
+});
+</script>
+
+<style>
+/* Estilos específicos para a página de calendário */
+.calendar-card {
+  height: auto;
+  overflow: hidden;
+}
+
+.calendar-container {
+  height: 82vh;
+}
+
+/* Para telas pequenas */
+@media (max-width: 600px) {
+  .calendar-container {
+    height: 600px;
+    padding: 8px;
+  }
+}
+</style>

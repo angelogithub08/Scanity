@@ -1,0 +1,106 @@
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
+import { EmailsService } from '../../infra/emails/emails.service';
+import { UsersRepository } from '../users/users.repository';
+import { UsersService } from '../users/users.service';
+import { AuthService } from './auth.service';
+import {
+  admin,
+  loginDto,
+  mockedToken,
+  newPasswordDto,
+  recoveryPasswordDto,
+} from './mocks/auth.mocks';
+
+describe('AuthService', () => {
+  let service: AuthService;
+
+  const jwtServiceMock = {
+    signAsync: jest.fn(),
+  };
+
+  const usersServiceMock = {
+    findByEmail: jest.fn(),
+    findByToken: jest.fn(),
+    update: jest.fn(),
+  };
+
+  const emailsServiceMock = {
+    sendRecoveryPasswordMail: jest.fn(),
+    sendChangedPasswordMail: jest.fn(),
+  };
+
+  const userServiceRepositoryMock = {
+    create: jest.fn(),
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    findByEmail: jest.fn(),
+    findByToken: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        UsersService,
+        JwtService,
+        EmailsService,
+      ],
+    })
+      .overrideProvider(JwtService)
+      .useValue(jwtServiceMock)
+      .overrideProvider(UsersService)
+      .useValue(usersServiceMock)
+      .overrideProvider(EmailsService)
+      .useValue(emailsServiceMock)
+      .overrideProvider(UsersRepository)
+      .useValue(userServiceRepositoryMock)
+      .compile();
+
+    service = module.get<AuthService>(AuthService);
+
+    usersServiceMock.findByEmail.mockResolvedValue(Promise.resolve(admin));
+    jwtServiceMock.signAsync.mockResolvedValue(Promise.resolve(mockedToken));
+    usersServiceMock.findByToken.mockResolvedValue(Promise.resolve(admin));
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('login', () => {
+    it('should return a token', async () => {
+      const result = await service.login(loginDto);
+
+      expect(usersServiceMock.findByEmail).toHaveBeenCalled();
+      expect(jwtServiceMock.signAsync).toHaveBeenCalled();
+      expect(result).toEqual({
+        access_token: mockedToken,
+      });
+    });
+  });
+
+  describe('recoveryPassword', () => {
+    it('should return a user', async () => {
+      const result = await service.recoveryPassword(recoveryPasswordDto);
+
+      expect(result).toEqual({
+        message: 'Email de recuperação de senha enviado com sucesso',
+      });
+      expect(usersServiceMock.findByEmail).toHaveBeenCalled();
+      expect(usersServiceMock.update).toHaveBeenCalled();
+      expect(emailsServiceMock.sendRecoveryPasswordMail).toHaveBeenCalled();
+    });
+  });
+  describe('newPassword', () => {
+    it('should return a user', async () => {
+      await service.newPassword(newPasswordDto);
+
+      expect(usersServiceMock.findByToken).toHaveBeenCalled();
+      expect(usersServiceMock.update).toHaveBeenCalled();
+      expect(emailsServiceMock.sendChangedPasswordMail).toHaveBeenCalled();
+    });
+  });
+});

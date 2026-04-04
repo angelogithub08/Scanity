@@ -1,0 +1,22 @@
+import { defineStore, acceptHMRUpdate } from 'pinia';
+import type { {{pascalCase singular}} } from 'src/interfaces/{{kebabCase module}}';
+import { ref } from 'vue';
+
+export const use{{pascalCase module}}Store = defineStore('{{kebabCase module}}', () => {
+  const current{{pascalCase singular}} = ref<Partial<{{pascalCase singular}}>>();
+  const {{camelCase module}} = ref<Partial<{{pascalCase singular}}>[]>([]);
+
+  function setCurrent{{pascalCase singular}}(data: Partial<{{pascalCase singular}}>) {
+    current{{pascalCase singular}}.value = data;
+  }
+
+  function set{{pascalCase module}}(data: Partial<{{pascalCase singular}}>[]) {
+    {{camelCase module}}.value = data;
+  }
+
+  return { {{camelCase module}}, set{{pascalCase module}}, current{{pascalCase singular}}, setCurrent{{pascalCase singular}} };
+});
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(use{{pascalCase module}}Store, import.meta.hot));
+}

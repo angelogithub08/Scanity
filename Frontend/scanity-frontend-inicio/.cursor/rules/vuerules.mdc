@@ -1,0 +1,11 @@
+---
+globs: *.vue
+alwaysApply: false
+---
+- Sempre implemente recursos responsivos.
+- Sempre utilize a forma tradicional de escrever funções, usando a palavra function, e não arrow functions.
+- Use arrow functions apenas quando necessário.
+- Sempre priorize o uso dos componentes do Quasar.
+- Sempre priorize o uso das classes helpers do quasar ao invés de criar estilos css.
+- Crie estilizações css apenas quando necessário.
+- As propriedades das interfaces que se relacionam com as tabela do banco de dados sempre utilizam o padrão snake_case.

@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+- Sempre que for criar uma migração, use o comando `npx knex migrate:make <nome_da_migração> -x ts`

@@ -1,0 +1,44 @@
+<div style="text-align: center; margin-bottom: 20px;">
+  <div style="font-size: 48px; color: #4ade80;">✅</div>
+</div>
+
+<h2 style="color: #16a34a; text-align: center; margin-bottom: 30px;">Pagamento Processado com Sucesso!</h2>
+
+<p>Olá <strong>{{userName}}</strong>,</p>
+
+<p>Temos uma ótima notícia! Seu pagamento foi processado com sucesso.</p>
+
+<div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+  <h3 style="margin-top: 0; color: #0ea5e9;">Detalhes do Pagamento</h3>
+  <p><strong>Valor:</strong> R$ {{amount}}</p>
+  <p><strong>Data do Pagamento:</strong> {{paymentDate}}</p>
+  <p><strong>Método:</strong> {{paymentMethod}}</p>
+  {{#if transactionId}}
+  <p><strong>ID da Transação:</strong> {{transactionId}}</p>
+  {{/if}}
+  {{#if planName}}
+  <p><strong>Plano:</strong> {{planName}}</p>
+  {{/if}}
+</div>
+
+{{#if nextChargeDate}}
+<div style="background-color: #fefce8; border: 1px solid #facc15; border-radius: 8px; padding: 15px; margin: 20px 0;">
+  <p style="margin: 0;"><strong>📅 Próxima Cobrança:</strong> {{nextChargeDate}}</p>
+</div>
+{{/if}}
+
+<p>Seu acesso está garantido e você pode continuar aproveitando todos os benefícios da sua assinatura.</p>
+
+{{#if accessUrl}}
+<p style="text-align: center; margin: 30px 0;">
+  <a href="{{accessUrl}}" class="button">
+    Acessar Plataforma
+  </a>
+</p>
+{{/if}}
+
+<div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 15px; margin: 20px 0;">
+  <p style="margin: 0;"><strong>💡 Dica:</strong> Você pode acompanhar seu histórico de pagamentos e faturas diretamente na sua conta.</p>
+</div>
+
+<p>Obrigado por confiar em nossos serviços!</p>

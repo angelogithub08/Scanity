@@ -1,0 +1,48 @@
+import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthService } from './auth.service';
+import { Public } from './decorators/public.decorator';
+import { LoginDto } from './dto/login.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+
+@ApiTags('Auth')
+@ApiBearerAuth('defaultBearerAuth')
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Public()
+  @Post('login')
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
+
+  @Get('me')
+  me(@Req() request: Request) {
+    return this.authService.me(request);
+  }
+
+  @Public()
+  @Post('recovery-password')
+  @ApiResponse({
+    status: 204,
+    description:
+      'Solicita uma nova senha a partir do e-mail de um usuário cadastrado no sistema.',
+  })
+  @HttpCode(204)
+  async recoveryPassword(@Body() recoveryPasswordDto: RecoveryPasswordDto) {
+    await this.authService.recoveryPassword(recoveryPasswordDto);
+  }
+
+  @Public()
+  @Post('new-password')
+  @ApiResponse({
+    status: 204,
+    description: 'Atualiza a senha caso o token seja válido.',
+  })
+  @HttpCode(204)
+  async newPassword(@Body() newPasswordDto: NewPasswordDto) {
+    await this.authService.newPassword(newPasswordDto);
+  }
+}

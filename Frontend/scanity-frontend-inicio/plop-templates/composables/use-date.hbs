@@ -1,0 +1,61 @@
+import { isString } from 'lodash';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
+dayjs.extend(utc);
+
+export function useDate() {
+  function dateToClient(strDate: string | null) {
+    if (isString(strDate) && dayjs(strDate).isValid()) {
+      return dayjs(strDate).format('DD/MM/YYYY');
+    }
+
+    return null;
+  }
+
+  function dateToDatabase(strDate: string | null) {
+    if (isString(strDate) && dayjs(strDate, 'DD/MM/YYYY').isValid()) {
+      return dayjs(strDate, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    }
+
+    return null;
+  }
+
+  function datetimeToClient(strDate: string | null) {
+    if (isString(strDate) && dayjs(strDate).isValid()) {
+      return dayjs(strDate).format('DD/MM/YYYY HH:mm');
+    }
+
+    return null;
+  }
+
+  function datetimeToDatabase(strDate: string | null) {
+    if (isString(strDate) && dayjs(strDate, 'DD/MM/YYYY HH:mm').isValid()) {
+      return dayjs(strDate, 'DD/MM/YYYY HH:mm').utc().format();
+    }
+
+    return null;
+  }
+
+  function getTime(strDate: string | null) {
+    if (!isString(strDate) && !dayjs(strDate).isValid()) return null;
+    const previousDayDate = dayjs().diff(dayjs(strDate), 'day');
+    if (previousDayDate) return dayjs(strDate).format('DD/MM/YYYY HH:mm');
+    return dayjs(strDate).format('HH:mm');
+  }
+
+  function getHours(value: string) {
+    return dayjs(value).format('HH:mm');
+  }
+
+  return {
+    dateToClient,
+    dateToDatabase,
+    datetimeToClient,
+    datetimeToDatabase,
+    getTime,
+    getHours,
+  };
+}

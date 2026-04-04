@@ -1,0 +1,85 @@
+<template>
+  <q-table
+    :rows-per-page-options="[10, 20, 30, 40, 50]"
+    :rows="rows"
+    :columns="columns"
+    row-key="id"
+    v-model:pagination="pagination"
+    :loading="loading"
+    binary-state-sort
+    @request="onRequest"
+    :dense="q.screen.lt.sm"
+  >
+    <template v-slot:header="props">
+      <q-tr :props="props">
+        <q-th auto-width />
+        <q-th v-for="col in props.cols" :key="col.name" :props="props">
+          \{{ col.label }}
+        </q-th>
+      </q-tr>
+    </template>
+    <template v-slot:body="props">
+      <q-tr :props="props">
+        <q-td auto-width>
+          <RecordMenu @view="viewRecord" @delete="deleteRecord" :record="props.row" />
+        </q-td>
+        <q-td v-for="col in props.cols" :key="col.name" :props="props">
+          \{{ col.value }}
+        </q-td>
+      </q-tr>
+    </template>
+  </q-table>
+</template>
+
+<script setup lang="ts">
+import { useQuasar } from 'quasar';
+import { reactive } from 'vue';
+import RecordMenu from './RecordMenu.vue';
+
+interface Pagination {
+  sortBy: string;
+  descending: boolean;
+  page: number;
+  rowsPerPage: number;
+  rowsNumber: number;
+}
+
+interface Props {
+  rows: any[];
+  columns: any[];
+  loading: boolean;
+}
+
+defineProps<Props>();
+
+const emit = defineEmits(['viewRecord', 'deleteRecord', 'onRequest']);
+const q = useQuasar();
+
+const pagination = reactive<Pagination>({
+  sortBy: 'desc',
+  descending: false,
+  page: 1,
+  rowsPerPage: 10,
+  rowsNumber: 10,
+});
+
+function setPagination(paginationData: Pagination) {
+  Object.assign(pagination, paginationData);
+}
+
+function viewRecord(record: any) {
+  emit('viewRecord', record);
+}
+
+function deleteRecord(record: any) {
+  emit('deleteRecord', record);
+}
+
+function onRequest(props: any) {
+  emit('onRequest', props);
+}
+
+defineExpose({
+  setPagination,
+});
+</script>

@@ -1,0 +1,39 @@
+import { Notify } from 'quasar';
+
+export function useHandleException() {
+  function showError(errorCaught: any) {
+    if (typeof errorCaught === 'string') {
+      Notify.create({
+        message: errorCaught,
+        icon: 'error',
+        position: 'top-right',
+        color: 'red',
+        actions: [{ icon: 'close', color: 'white' }],
+      });
+      return;
+    }
+
+    if (errorCaught?.response?.data?.message) {
+      const message = errorCaught.response.data.message;
+      Notify.create({
+        message,
+        icon: 'error',
+        position: 'top-right',
+        color: 'red',
+        actions: [{ icon: 'close', color: 'white' }],
+      });
+      return;
+    }
+    Notify.create({
+      message: errorCaught.message || 'Um erro inesperado aconteceu',
+      icon: 'error',
+      position: 'top-right',
+      color: 'red',
+      actions: [{ icon: 'close', color: 'white' }],
+    });
+  }
+
+  return {
+    showError,
+  };
+}

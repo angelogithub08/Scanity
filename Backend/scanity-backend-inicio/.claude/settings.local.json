@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx knex:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx plop)"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "free_tables": 63,
+  "occupied_tables": 10,
+  "reserved_tables": 8,
+  "overdue_orders": 0,
+  "total_order_value_per_day": [
+    {
+      "date": "2025-09-09",
+      "total_value": 310
+    },
+    {
+      "date": "2025-09-15",
+      "total_value": 600
+    },
+    {
+      "date": "2025-09-20",
+      "total_value": 220
+    },
+    {
+      "date": "2025-09-21",
+      "total_value": 1710
+    }
+  ],
+  "avg_daily_session_duration": 905.7028225490196,
+  "avg_orders_per_hour": [
+    {
+      "hour": 1,
+      "count": 5
+    },
+    {
+      "hour": 2,
+      "count": 6
+    },
+    {
+      "hour": 9,
+      "count": 3
+    },
+    {
+      "hour": 17,
+      "count": 2
+    },
+    {
+      "hour": 20,
+      "count": 3
+    }
+  ],
+  "avg_ticket_value": 167.1,
+  "total_revenue_per_month": [
+    {
+      "month": "2025-09",
+      "total_revenue": 1450
+    }
+  ],
+  "total_expenses_per_month": [
+    {
+      "month": "2025-09",
+      "total_expense": 9.5
+    }
+  ],
+  "total_commands_per_month": [
+    {
+      "month": "2025-09",
+      "count": 17
+    }
+  ]
+}

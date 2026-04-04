@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+- Sempre que for criar um módulo, utilize as definições do arquivo `docs/db.mermaid` e mapee as regras para definição dos módulos utlizando plop a partir do arquivo `plop-templates` e o arquivo `plopfile.js`. Crie as definições no arquivo `generator-plop.js`.

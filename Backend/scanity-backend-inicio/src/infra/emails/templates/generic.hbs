@@ -1,0 +1,24 @@
+<p>{{greeting}}</p>
+
+{{#if message}}
+  <p>{{message}}</p>
+{{/if}}
+
+{{#if content}}
+  {{{content}}}
+{{/if}}
+
+{{#if actionUrl}}
+  <p style='text-align: center;'>
+    <a href='{{actionUrl}}' class='button'>
+      {{actionText}}
+    </a>
+  </p>
+{{/if}}
+
+{{#if note}}
+  <div class='warning'>
+    <strong>📝 Observação:</strong>
+    {{note}}
+  </div>
+{{/if}}

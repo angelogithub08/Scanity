@@ -1,0 +1,31 @@
+import { computed } from 'vue';
+
+// Opções de tipos de usuário
+const userTypeOptions = [
+  { label: 'Administrador', value: 'ADMIN' },
+  { label: 'Usuário', value: 'USUARIO' },
+  { label: 'Cliente', value: 'CLIENTE' },
+  { label: 'Fornecedor', value: 'FORNECEDOR' },
+];
+
+// Opções de gênero
+const genderOptions = [
+  { label: 'Masculino', value: 'MASCULINO' },
+  { label: 'Feminino', value: 'FEMININO' },
+  { label: 'Outro', value: 'OUTRO' },
+];
+
+// Utilitário para transformar UPPERCASE em Capitalize
+function capitalizeOption(option: string) {
+  if (!option) return '';
+  return option.charAt(0).toUpperCase() + option.slice(1).toLowerCase();
+}
+
+// Retorna as opções e utilitários
+export function useOptions() {
+  return {
+    userTypeOptions: computed(() => userTypeOptions),
+    genderOptions: computed(() => genderOptions),
+    capitalizeOption,
+  };
+} 

@@ -1,6 +1,0 @@
----
-globs: src/composables/*
-alwaysApply: false
----
-- Sempre utilize os recursos dentro das pastas composables para reaproveitar recursos.
-- Sempre que for implementar uma nova funcionalidade considere o reaproveitamento de recursos, de preferencia programe composables.

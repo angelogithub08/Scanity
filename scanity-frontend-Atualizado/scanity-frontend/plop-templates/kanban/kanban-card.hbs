@@ -1,0 +1,74 @@
+<template>
+  <q-card 
+    class="kanban-card q-mb-sm cursor-pointer" 
+    bordered 
+    flat 
+    @click="openCardDetails"
+    :data-id="card.id"
+  >
+    <q-card-section class="q-pb-none">
+      <div class="text-subtitle2">\{{ card.title }}</div>
+    </q-card-section>
+
+    <q-card-section>
+      <div class="text-caption text-grey-7">\{{ card.description }}</div>
+    </q-card-section>
+
+    <q-card-section class="q-pt-none">
+      <div class="row justify-between items-center">
+        <q-chip
+          v-if="card.priority"
+          size="sm"
+          :color="getPriorityColor(card.priority)"
+          text-color="white"
+          dense
+        >
+          \{{ card.priority }}
+        </q-chip>
+        <q-avatar v-if="card.assignee" size="24px">
+          <img :src="card.assignee.avatar" />
+          <q-tooltip>\{{ card.assignee.name }}</q-tooltip>
+        </q-avatar>
+      </div>
+    </q-card-section>
+  </q-card>
+</template>
+
+<script setup lang="ts">
+import type { KanbanCard } from 'src/interfaces/kanban';
+
+const props = defineProps<{
+  card: KanbanCard;
+}>();
+
+const emit = defineEmits<{
+  (e: 'open-details', cardId: string): void;
+}>();
+
+function openCardDetails() {
+  emit('open-details', props.card.id);
+}
+
+function getPriorityColor(priority: string): string {
+  switch (priority) {
+    case 'Alta':
+      return 'red-5';
+    case 'Média':
+      return 'orange-5';
+    case 'Baixa':
+      return 'green-5';
+    default:
+      return 'grey-5';
+  }
+}
+</script>
+
+<style scoped>
+.kanban-card {
+  transition: all 0.2s;
+  min-width: 200px;
+}
+.kanban-card:hover {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+</style> 

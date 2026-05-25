@@ -1,0 +1,21 @@
+{
+  "counters": {
+    "total_subscriptions": 1,
+    "total_paid_charges": 1,
+    "total_pending_charges": 1,
+    "total_overdue_charges": 0
+  },
+  "monthly_paid": [
+    {
+      "month": "2026-01",
+      "total": 10
+    }
+  ],
+  "subscriptions_by_plan": [
+    {
+      "plan_name": "Plano 2",
+      "count": 1,
+      "percentage": 100
+    }
+  ]
+}

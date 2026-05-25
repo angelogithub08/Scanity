@@ -1,0 +1,401 @@
+<template>
+  <q-dialog
+    v-model="isOpen"
+    persistent
+    maximized
+    :transition-show="'slide-up'"
+    :transition-hide="'slide-down'"
+  >
+    <q-card class="column kanban-card-details" style="margin: auto">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">\{{ cardDetails?.title || 'Detalhes do Card' }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+
+      <q-card-section class="col q-pt-md kanban-card-content scroll">
+        <q-tabs
+          v-model="tab"
+          dense
+          class="text-grey"
+          active-color="primary"
+          indicator-color="primary"
+          align="left"
+          narrow-indicator
+        >
+          <q-tab name="details" label="Detalhes" />
+          <q-tab name="comments" label="Comentários" />
+          <q-tab name="attachments" label="Anexos" />
+          <q-tab name="history" label="Histórico" />
+        </q-tabs>
+
+        <q-separator />
+
+        <q-tab-panels v-model="tab" animated>
+          <q-tab-panel name="details">
+            <div class="q-gutter-y-md">
+              <q-input v-model="cardDetails.title" label="Título" outlined dense />
+
+              <q-select
+                v-model="cardDetails.priority"
+                :options="['Baixa', 'Média', 'Alta']"
+                label="Prioridade"
+                outlined
+                dense
+              />
+
+              <q-select
+                v-model="cardDetails.assignee"
+                :options="mockUsers"
+                option-label="name"
+                label="Responsável"
+                outlined
+                dense
+              >
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section avatar>
+                      <q-avatar>
+                        <img :src="scope.opt.avatar" />
+                      </q-avatar>
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>\{{ scope.opt.name }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+
+                <template v-slot:selected>
+                  <q-chip v-if="cardDetails.assignee" dense>
+                    <q-avatar>
+                      <img :src="cardDetails.assignee.avatar" />
+                    </q-avatar>
+                    \{{ cardDetails.assignee.name }}
+                  </q-chip>
+                </template>
+              </q-select>
+
+              <q-input
+                v-model="cardDetails.description"
+                type="textarea"
+                label="Descrição"
+                outlined
+                autogrow
+              />
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="comments">
+            <div class="q-gutter-y-md">
+              <div v-for="comment in mockComments" :key="comment.id" class="q-mb-md">
+                <div class="row items-start q-gutter-x-md">
+                  <q-avatar size="40px" v-if="comment.user">
+                    <img :src="comment.user.avatar" />
+                  </q-avatar>
+                  <div class="col">
+                    <div class="row items-center" v-if="comment.user">
+                      <div class="text-weight-bold">\{{ comment.user.name }}</div>
+                      <div class="q-ml-sm text-caption text-grey">\{{ comment.date }}</div>
+                    </div>
+                    <div class="q-mt-sm">\{{ comment.content }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <q-separator class="q-my-md" />
+
+              <q-input
+                v-model="newComment"
+                type="textarea"
+                label="Adicionar comentário"
+                outlined
+                autogrow
+              >
+                <template v-slot:after>
+                  <q-btn round flat color="primary" icon="send" :disable="!newComment.trim()" />
+                </template>
+              </q-input>
+            </div>
+          </q-tab-panel>
+
+          <q-tab-panel name="attachments">
+            <q-uploader
+              label="Carregar anexos"
+              multiple
+              accept=".jpg, .png, .pdf, .doc, .docx, .xlsx"
+              :factory="factoryFn"
+              style="max-width: 100%"
+            />
+
+            <q-list separator class="q-mt-md">
+              <q-item v-for="file in mockFiles" :key="file.id" clickable>
+                <q-item-section avatar>
+                  <q-icon :name="getFileIcon(file.type)" size="28px" />
+                </q-item-section>
+
+                <q-item-section>
+                  <q-item-label>\{{ file.name }}</q-item-label>
+                  <q-item-label caption>\{{ file.size }} - \{{ file.date }}</q-item-label>
+                </q-item-section>
+
+                <q-item-section side>
+                  <div class="row q-gutter-xs">
+                    <q-btn icon="download" flat round dense />
+                    <q-btn icon="delete" flat round dense color="negative" />
+                  </div>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-tab-panel>
+
+          <q-tab-panel name="history">
+            <q-timeline color="primary">
+              <q-timeline-entry
+                v-for="(activity, index) in mockActivities"
+                :key="index"
+                :title="activity.action"
+                :subtitle="activity.date"
+                :icon="activity.icon"
+              >
+                <div>
+                  \{{ activity.description }}
+                </div>
+              </q-timeline-entry>
+            </q-timeline>
+          </q-tab-panel>
+        </q-tab-panels>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancelar" color="grey-7" v-close-popup />
+        <q-btn unelevated label="Salvar" color="primary" @click="saveCard" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import type {
+  KanbanCard,
+  CardAssignee,
+  Comment,
+  Attachment,
+  Activity,
+} from 'src/interfaces/kanban';
+
+const props = defineProps<{
+  modelValue: boolean;
+  cardId?: string;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+  (e: 'save', card: KanbanCard): void;
+}>();
+
+const tab = ref('details');
+const newComment = ref('');
+const cardDetails = ref<KanbanCard>({
+  id: '',
+  title: '',
+  description: '',
+});
+
+const isOpen = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
+});
+
+watch(
+  () => props.cardId,
+  () => {
+    if (props.cardId) {
+      const card = mockCards.find((c) => c.id === props.cardId);
+      if (card) {
+        cardDetails.value = { ...card };
+      }
+    }
+  },
+  { immediate: true },
+);
+
+// Dados mock para simulação
+const mockUsers: CardAssignee[] = [
+  { id: '1', name: 'João Silva', avatar: 'https://cdn.quasar.dev/img/boy-avatar.png' },
+  { id: '2', name: 'Maria Santos', avatar: 'https://cdn.quasar.dev/img/avatar.png' },
+  { id: '3', name: 'Pedro Almeida', avatar: 'https://cdn.quasar.dev/img/avatar3.jpg' },
+];
+
+const mockCards: KanbanCard[] = [
+  {
+    id: '1',
+    title: 'Implementar login',
+    description: 'Criar tela de login com autenticação',
+    priority: 'Alta',
+    assignee: mockUsers[0],
+  },
+  {
+    id: '2',
+    title: 'Design da dashboard',
+    description: 'Criar wireframes para dashboard',
+    priority: 'Média',
+    assignee: mockUsers[1],
+  },
+];
+
+const mockComments: Comment[] = [
+  {
+    id: '1',
+    user: mockUsers[0],
+    content: 'Comecei a implementação, mas precisamos definir melhor os requisitos.',
+    date: '2 dias atrás',
+  },
+  {
+    id: '2',
+    user: mockUsers[1],
+    content: 'Concordo, podemos marcar uma reunião para discutir isso?',
+    date: '1 dia atrás',
+  },
+];
+
+const mockFiles: Attachment[] = [
+  { id: '1', name: 'documento.pdf', type: 'pdf', size: '2.4 MB', date: '10/05/2023' },
+  { id: '2', name: 'screenshot.png', type: 'image', size: '1.2 MB', date: '11/05/2023' },
+  { id: '3', name: 'planilha.xlsx', type: 'excel', size: '567 KB', date: '12/05/2023' },
+];
+
+const mockActivities: Activity[] = [
+  {
+    id: '1',
+    action: 'Card criado',
+    description: 'João criou este card',
+    date: '15/05/2023 14:30',
+    icon: 'add_circle',
+  },
+  {
+    id: '2',
+    action: 'Prioridade alterada',
+    description: 'Maria alterou a prioridade de Média para Alta',
+    date: '16/05/2023 10:15',
+    icon: 'flag',
+  },
+  {
+    id: '3',
+    action: 'Atribuição alterada',
+    description: 'Pedro atribuiu esta tarefa para João',
+    date: '17/05/2023 09:45',
+    icon: 'person',
+  },
+];
+
+function saveCard() {
+  emit('save', cardDetails.value);
+}
+
+function getFileIcon(type: string) {
+  switch (type) {
+    case 'pdf':
+      return 'picture_as_pdf';
+    case 'image':
+      return 'image';
+    case 'excel':
+      return 'table_chart';
+    default:
+      return 'insert_drive_file';
+  }
+}
+
+function factoryFn() {
+  // Função mock para simular upload
+  return {
+    url: 'http://localhost:4444/upload',
+    method: 'POST',
+    headers: [{ name: 'Authorization', value: `Bearer token` }],
+  };
+}
+</script>
+
+<style scoped>
+.kanban-card-details {
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+}
+
+.kanban-card-content {
+  overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+  .kanban-card-details {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  :deep(.q-tab-panels) {
+    padding: 12px 8px;
+  }
+
+  :deep(.q-card-section) {
+    padding: 12px;
+  }
+
+  :deep(.q-field) {
+    margin-bottom: 12px;
+  }
+
+  :deep(.q-avatar) {
+    font-size: 32px;
+  }
+
+  :deep(.text-h6) {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  :deep(.q-tabs) {
+    overflow-x: auto;
+  }
+
+  :deep(.q-btn) {
+    padding: 4px 10px;
+    min-height: 32px;
+    font-size: 0.8rem;
+  }
+
+  :deep(.q-avatar) {
+    font-size: 28px;
+  }
+
+  :deep(.q-timeline__entry) {
+    padding-left: 32px;
+  }
+
+  :deep(.q-timeline__dot) {
+    left: 0;
+  }
+
+  :deep(.q-item) {
+    min-height: 40px;
+    padding: 4px 8px;
+  }
+
+  :deep(.q-field__label) {
+    font-size: 0.8rem;
+  }
+
+  :deep(.q-field__native) {
+    padding: 4px;
+    font-size: 0.9rem;
+  }
+
+  :deep(.q-tab) {
+    padding: 0 8px;
+    min-height: 40px;
+  }
+}
+</style> 

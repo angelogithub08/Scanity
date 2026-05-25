@@ -1,0 +1,22 @@
+export interface CalendarItem {
+  id: string;
+  title: string;
+  date?: string;
+  description?: string;
+  status?: string;
+  color?: string;
+  allDay?: boolean;
+  start?: string;
+  end?: string;
+  url?: string;
+  classNames?: string[];
+  editable?: boolean;
+  startEditable?: boolean;
+  durationEditable?: boolean;
+  resourceEditable?: boolean;
+  display?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
+  extendedProps?: Record<string, any>;
+}

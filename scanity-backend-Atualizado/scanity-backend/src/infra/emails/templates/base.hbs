@@ -1,0 +1,128 @@
+<html lang='pt-BR'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{subject}}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #e6f3ff;
+      }
+      table {
+        border-spacing: 0;
+        border-collapse: collapse;
+      }
+      .email-wrapper {
+        width: 100%;
+        background-color: #e6f3ff;
+        padding: 20px 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #094aea;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #094aea;
+      }
+      .content {
+        margin-bottom: 30px;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #094aea !important;
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 15px 0;
+        font-weight: bold;
+      }
+      .button:hover {
+        background-color: #0841c4 !important;
+      }
+      .code {
+        background-color: #f0f8ff;
+        padding: 10px;
+        border-left: 4px solid #094aea;
+        margin: 15px 0;
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: bold;
+        color: #094aea;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #d6ebff;
+        margin-top: 30px;
+        color: #6b9ae6;
+        font-size: 14px;
+      }
+      .warning {
+        background-color: #fff8e1;
+        border: 1px solid #ffeb3b;
+        color: #f57f17;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 15px 0;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .container {
+          padding: 20px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <table class='email-wrapper' cellpadding='0' cellspacing='0' width='100%'>
+      <tr>
+        <td align='center'>
+          <table class='email-container' cellpadding='0' cellspacing='0'>
+            <tr>
+              <td>
+                <div class='container'>
+                  <div class='header'>
+                    <div class='logo'>{{platformName}}</div>
+                  </div>
+
+                  <div class='content'>
+                    {{{content}}}
+                  </div>
+
+                  <div class='footer'>
+                    <p>Equipe <strong>{{platformName}}</strong></p>
+                    <p>Este é um email automático, não responda a esta mensagem.</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+<template>
+  <div class="kanban-column bg-grey-2 q-pa-md rounded-borders" :data-column-id="column.id">
+    <div class="column-header row items-center justify-between q-mb-md column-drag-handle">
+      <div class="text-subtitle1 text-weight-bold" v-if="!isEditingColumnTitle" @click="startEditingColumnTitle">
+        \{{ column.title }}
+      </div>
+      <q-input
+        v-else
+        v-model="editedColumnTitle"
+        dense
+        outlined
+        autofocus
+        class="column-title-edit"
+        @keyup.enter="saveColumnTitle"
+        @blur="saveColumnTitle"
+      >
+        <template v-slot:append>
+          <q-btn round dense flat icon="check" @click="saveColumnTitle" />
+        </template>
+      </q-input>
+      <div class="row items-center">
+        <div class="text-caption text-grey-8 q-mr-sm">\{{ column.cards.length }} itens</div>
+        <q-icon name="drag_indicator" size="xs" class="cursor-move text-grey-6" />
+      </div>
+    </div>
+
+    <div class="column-content">
+      <div class="cards-container">
+        <draggable
+          v-model="columnCards"
+          :group="{ name: 'cards', pull: true, put: true }"
+          item-key="id"
+          ghost-class="ghost-card"
+          drag-class="drag-card"
+          animation="200"
+          @end="onDragEnd"
+          :empty-insert-threshold="20"
+        >
+          <template #item="{ element }">
+            <kanban-card
+              :card="element"
+              @open-details="(id) => $emit('open-card-details', id)"
+            />
+          </template>
+          <template #header>
+            <div class="empty-zone" v-if="column.cards.length === 0">
+              <div class="text-grey text-center q-pa-md">
+                Arraste um card para cá
+              </div>
+            </div>
+          </template>
+        </draggable>
+      </div>
+
+      <q-btn
+        outline
+        class="full-width q-mt-sm text-grey-6"
+        icon="add"
+        label="Adicionar"
+        @click="$emit('add-card', column.id)"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import KanbanCard from './KanbanCard.vue';
+import type { KanbanColumn } from 'src/interfaces/kanban';
+import { computed, ref } from 'vue';
+import draggable from 'vuedraggable';
+
+const props = defineProps<{
+  column: KanbanColumn;
+}>();
+
+const emit = defineEmits<{
+  (e: 'open-card-details', cardId: string): void;
+  (e: 'add-card', columnId: string): void;
+  (e: 'move-card', payload: { cardId: string, fromColumnId: string, toColumnId: string, newIndex: number }): void;
+  (e: 'update-column-cards', payload: { columnId: string, cards: any[] }): void;
+  (e: 'update-column-title', payload: { columnId: string, title: string }): void;
+}>();
+
+// Estado para edição de título da coluna
+const isEditingColumnTitle = ref(false);
+const editedColumnTitle = ref('');
+
+// Iniciar edição do título da coluna
+function startEditingColumnTitle() {
+  editedColumnTitle.value = props.column.title;
+  isEditingColumnTitle.value = true;
+}
+
+// Salvar o novo título da coluna
+function saveColumnTitle() {
+  const trimmedTitle = editedColumnTitle.value.trim();
+  if (trimmedTitle && props.column) {
+    // Emitir evento para o componente pai atualizar o título da coluna
+    emit('update-column-title', {
+      columnId: props.column.id,
+      title: trimmedTitle
+    });
+  }
+  isEditingColumnTitle.value = false;
+}
+
+// Computed property para manipular os cards da coluna
+const columnCards = computed({
+  get: () => props.column.cards,
+  set: (newCards) => {
+    // Quando os cards são reordenados, emitimos um evento com a nova ordenação
+    emit('update-column-cards', {
+      columnId: props.column.id,
+      cards: newCards
+    });
+  }
+});
+
+// Função chamada quando o drag termina
+function onDragEnd(evt: any) {
+  if (evt.from !== evt.to) {
+    // Se o card foi movido para outra coluna
+    emit('move-card', {
+      cardId: evt.item.getAttribute('data-id'), // ID do card movido
+      fromColumnId: evt.from.closest('.kanban-column').getAttribute('data-column-id'), 
+      toColumnId: evt.to.closest('.kanban-column').getAttribute('data-column-id'),
+      newIndex: evt.newIndex
+    });
+  }
+}
+</script>
+
+<style scoped>
+.kanban-column {
+  border: 1px solid #ccc;
+  min-width: 300px;
+  width: 320px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(90vh - 120px); /* Ajustado para acompanhar a altura do KanbanBoard */
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative; /* Adicionado para posicionamento de elementos filhos */
+}
+
+.column-header {
+  flex: 0 0 auto;
+  cursor: move;
+  padding: 0.25rem 0.1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.column-header:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.column-title-edit {
+  width: 180px;
+  margin-right: 8px;
+}
+
+.text-subtitle1 {
+  cursor: pointer;
+  padding: 4px 0px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.column-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Importante para que o flex funcione corretamente */
+  overflow: hidden;
+  padding-bottom: 10px; /* Adiciona espaço na parte inferior */
+}
+
+.cards-container {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
+  min-height: 0; /* Importante para o scroll funcionar */
+  max-height: 100%; /* Garante que use todo o espaço disponível */
+}
+
+/* Estiliza a barra de rolagem vertical nas colunas */
+.cards-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cards-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.cards-container::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+/* Estilos para o drag and drop */
+.ghost-card {
+  opacity: 0.5;
+  background: #f0f0f0;
+  border: 1px dashed #999;
+}
+
+.drag-card {
+  opacity: 0.8;
+}
+
+/* Área vazia para drop quando a coluna está vazia */
+.empty-zone {
+  min-height: 100px;
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style> 

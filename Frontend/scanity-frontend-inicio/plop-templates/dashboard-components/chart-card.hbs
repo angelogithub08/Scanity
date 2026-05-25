@@ -1,0 +1,23 @@
+<template>
+  <q-card class="chart-card" flat bordered>
+    <q-card-section>
+      <div class="text-h6 q-mb-md">\{{ title }}</div>
+      <apexchart height="280" :type="type" :options="chartOptions" :series="series"></apexchart>
+    </q-card-section>
+  </q-card>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  title: string;
+  type: string;
+  chartOptions: Record<string, any>;
+  series: any[];
+}>();
+</script>
+
+<style scoped>
+.chart-card {
+  height: 100%;
+}
+</style> 

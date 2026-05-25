@@ -1,0 +1,153 @@
+<template>
+  <q-card class="counter-card">
+    <q-card-section class="counter-content" :class="gradientClass">
+      <div class="text-h6 q-mb-xs counter-title">{{ title }}</div>
+      <div v-if="loading" class="counter-value">
+        <q-spinner-dots color="white" size="2rem" />
+      </div>
+      <div v-else class="text-h4 text-weight-bold counter-value">{{ value }}</div>
+      <div class="icon-container">
+        <q-icon :name="icon" :class="['bg-icon', iconColorClass]" />
+      </div>
+    </q-card-section>
+  </q-card>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    value: number | string;
+    icon: string;
+    loading?: boolean;
+  }>(),
+  { loading: false },
+);
+
+// Cores para diferentes tipos de cards baseados no ícone
+const gradientClass = computed(() => {
+  const iconMap: Record<string, string> = {
+    inventory_2: 'gradient-blue',
+    people: 'gradient-purple',
+    warehouse: 'gradient-green',
+    warning: 'gradient-orange',
+  };
+  return iconMap[props.icon] || 'gradient-default';
+});
+
+// Cores para os ícones
+const iconColorClass = computed(() => {
+  const iconMap: Record<string, string> = {
+    inventory_2: 'text-blue',
+    people: 'text-purple',
+    warehouse: 'text-green',
+    warning: 'text-orange',
+  };
+  return iconMap[props.icon] || 'text-grey';
+});
+</script>
+
+<style scoped>
+.counter-card {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.counter-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.counter-card:hover .bg-icon {
+  opacity: 0.35;
+  transform: rotate(-5deg) scale(1.15);
+}
+
+.counter-content {
+  height: 100%;
+  border-radius: 16px;
+  padding: 20px 24px !important;
+  position: relative;
+}
+
+.counter-title {
+  color: white;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.counter-value {
+  color: white;
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.icon-container {
+  position: absolute;
+  bottom: -15px;
+  right: -15px;
+  z-index: 1;
+}
+
+.bg-icon {
+  font-size: 7.5rem;
+  opacity: 0.25;
+  transform: rotate(-10deg);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.text-blue {
+  color: white;
+}
+
+.text-green {
+  color: white;
+}
+
+.text-purple {
+  color: white;
+}
+
+.text-orange {
+  color: white;
+}
+
+.text-grey {
+  color: white;
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.gradient-default {
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+}
+</style>

@@ -1,0 +1,133 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+import { Test, TestingModule } from '@nestjs/testing';
+import { {{pascalCase module}}Controller } from './{{kebabCase module}}.controller';
+import { {{pascalCase module}}Service } from './{{kebabCase module}}.service';
+import { Create{{pascalCase module}}Dto } from './dto/create-{{kebabCase module}}.dto';
+import { Update{{pascalCase module}}Dto } from './dto/update-{{kebabCase module}}.dto';
+import { List{{pascalCase module}}ParamsDto, ListPaginated{{pascalCase module}}ParamsDto } from './dto/params-{{kebabCase module}}.dto';
+
+describe('{{pascalCase module}}Controller', () => {
+  let controller: {{pascalCase module}}Controller;
+  let service: {{pascalCase module}}Service;
+
+  // Mock data para {{singular}}
+  const mockData = {
+    id: "mock-id",
+{{#each (splitFields fields)}}
+    {{name}}: {{#if (eq type "string")}}"Test {{name}}"{{else if (eq type "number")}}1{{else if (eq type "boolean")}}true{{else if (eq type "Date")}}new Date(){{else}}"Test value"{{/if}},
+{{/each}}
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockPaginatedResult = {
+    data: [mockData],
+    total: 1,
+    page: 1,
+    limit: 10,
+    totalPages: 1
+  };
+
+  // Mock para o DTO de criação
+  const mockCreateDto: Create{{pascalCase module}}Dto = {
+{{#each (splitFields fields)}}
+    {{name}}: {{#if (eq type "string")}}"Test {{name}}"{{else if (eq type "number")}}1{{else if (eq type "boolean")}}true{{else if (eq type "Date")}}new Date(){{else}}"Test value"{{/if}},
+{{/each}}
+  };
+
+  // Mock para o DTO de atualização
+  const mockUpdateDto: Partial<Create{{pascalCase module}}Dto> = {
+{{#each (splitFields fields)}}
+    {{name}}: {{#if (eq type "string")}}"Updated {{name}}"{{else if (eq type "number")}}2{{else if (eq type "boolean")}}false{{else if (eq type "Date")}}new Date(){{else}}"Updated value"{{/if}},
+{{/each}}
+  };
+
+  // Mock para dados após atualização
+  const mockUpdatedData = {
+    ...mockData,
+    ...mockUpdateDto,
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [{{pascalCase module}}Controller],
+      providers: [
+        {
+          provide: {{pascalCase module}}Service,
+          useValue: {
+            create: jest.fn().mockResolvedValue(mockData),
+            findAll: jest.fn().mockResolvedValue(mockPaginatedResult),
+            list: jest.fn().mockResolvedValue([mockData]),
+            findOne: jest.fn().mockResolvedValue(mockData),
+            update: jest.fn().mockResolvedValue(mockUpdatedData),
+            remove: jest.fn().mockResolvedValue({ deleted: true }),
+          },
+        },
+      ],
+    }).compile();
+
+    controller = module.get<{{pascalCase module}}Controller>({{pascalCase module}}Controller);
+    service = module.get<{{pascalCase module}}Service>({{pascalCase module}}Service);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+    expect(service).toBeDefined();
+  });
+
+  it('should create a new {{singular}}', async () => {
+    const result = await controller.create(mockCreateDto);
+    
+    expect(service.create).toHaveBeenCalledWith(mockCreateDto);
+    expect(result).toEqual(mockData);
+{{#each (splitFields fields)}}
+    expect(result.{{name}}).toBeDefined();
+{{/each}}
+  });
+
+  it('should return paginated {{singular}} list', async () => {
+    const params = { page: 1, limit: 10 } as ListPaginated{{pascalCase module}}ParamsDto;
+    const result = await controller.findAll(params);
+    
+    expect(service.findAll).toHaveBeenCalledWith(params);
+    expect(result).toEqual(mockPaginatedResult);
+    expect(result.data).toHaveLength(1);
+  });
+
+  it('should return all {{singular}} records', async () => {
+    const params = {} as List{{pascalCase module}}ParamsDto;
+    const result = await controller.list(params);
+    
+    expect(service.list).toHaveBeenCalledWith(params);
+    expect(result).toEqual([mockData]);
+    expect(result).toHaveLength(1);
+  });
+
+  it('should return a {{singular}} by id', async () => {
+    const id = "mock-id";
+    const result = await controller.findOne(id);
+    
+    expect(service.findOne).toHaveBeenCalledWith(id);
+    expect(result).toEqual(mockData);
+    expect(result.id).toBe(id);
+  });
+
+  it('should update a {{singular}}', async () => {
+    const id = "mock-id";
+    const result = await controller.update(id, mockUpdateDto as Update{{pascalCase module}}Dto);
+    
+    expect(service.update).toHaveBeenCalledWith(id, mockUpdateDto);
+    expect(result).toEqual(mockUpdatedData);
+{{#each (splitFields fields)}}
+    expect(result.{{name}}).toBeDefined();
+{{/each}}
+  });
+
+  it('should remove a {{singular}}', async () => {
+    const id = "mock-id";
+    const result = await controller.remove(id);
+    
+    expect(service.remove).toHaveBeenCalledWith(id);
+    expect(result).toEqual({ deleted: true });
+  });
+});

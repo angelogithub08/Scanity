@@ -1,0 +1,31 @@
+// Variáveis CSS personalizadas para o FullCalendar
+:root {
+  --fc-border-color: rgba(0, 0, 0, 0.1);
+  --fc-button-bg-color: #1976d2;
+  --fc-button-border-color: #1976d2;
+  --fc-button-hover-bg-color: #1565c0;
+  --fc-button-hover-border-color: #1565c0;
+  --fc-button-active-bg-color: #0d47a1;
+  --fc-event-bg-color: #1976d2;
+  --fc-event-border-color: #1976d2;
+  --fc-today-bg-color: rgba(25, 118, 210, 0.1);
+}
+
+// Estilos personalizados para o FullCalendar
+.calendar-card {
+  height: auto;
+  overflow: hidden;
+}
+
+.calendar-container {
+  height: 700px;
+  padding: 16px;
+}
+
+// Para telas pequenas
+@media (max-width: 600px) {
+  .calendar-container {
+    height: 600px;
+    padding: 8px;
+  }
+}

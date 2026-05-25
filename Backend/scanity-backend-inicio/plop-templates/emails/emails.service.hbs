@@ -1,0 +1,76 @@
+import { createTransport, Transporter, TransportOptions } from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class EmailsService {
+  private transporter: Transporter<SMTPTransport.SentMessageInfo>;
+  private sender: string;
+
+  constructor() {
+    const options = {
+      host: process.env.MAIL_HOST || 'sandbox.smtp.mailtrap.io',
+      port: Number(process.env.MAIL_PORT) || 587,
+      secure: process.env.MAIL_SECURE == 'true', // true for port 465, false for other ports
+      auth: {
+        user: process.env.MAIL_USER || 'user',
+        pass: process.env.MAIL_PASS || 'pass',
+      },
+    };
+    this.transporter = createTransport(options as TransportOptions);
+    this.sender =
+      process.env.MAIL_SENDER || 'Plataforma <naoresponda@plataforma.com.br>';
+  }
+
+  async sendRecoveryPasswordMail(email: string, token: string): Promise<void> {
+    const info = await this.transporter.sendMail({
+      from: this.sender, // sender address
+      to: `${email}`, // list of receivers
+      subject: 'Plataforma - Recuperação de Senha', // Subject line
+      html: `
+        Olá tudo bem? <br /> <br />
+        Você solicitou a recuperação de senha? <br /> <br />
+        Se sim, basta clicar nesse link e utilizando o código, altere sua senha atual: <br />
+        <b>Código: </b> ${token} <br />
+        
+
+        <small>Obs: Caso não tenha solicitado, não se preocupe, basta ignorar este email.</small> <br /><br /><br />
+
+        Equipe <b>Plataforma</b>.
+      `, // html body
+    });
+    console.log({ email, token });
+    console.log('Message sent: %s', info.messageId);
+  }
+
+  async sendChangedPasswordMail(email: string): Promise<void> {
+    const info = await this.transporter.sendMail({
+      from: this.sender, // sender address
+      to: `${email}`, // list of receivers
+      subject: 'Plataforma - Senha Alterada', // Subject line
+      html: `
+        Sua senha foi alterada com sucesso! <br /><br /><br />
+
+        Equipe <b>Plataforma</b>.
+      `, // html body
+    });
+    console.log({ email });
+    console.log('Message sent: %s', info.messageId);
+  }
+
+  async sendMail(
+    to: string,
+    subject: string,
+    text: string,
+  ): Promise<SMTPTransport.SentMessageInfo> {
+    const info = await this.transporter.sendMail({
+      from: this.sender,
+      to,
+      subject,
+      text,
+    });
+    console.log('Message sent: %s', info.messageId);
+    return info;
+  }
+}

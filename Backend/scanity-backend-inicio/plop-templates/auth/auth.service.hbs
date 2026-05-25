@@ -1,0 +1,117 @@
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { EmailsService } from '../../infra/emails/emails.service';
+import { UsersService } from '../users/users.service';
+import { RequestUser } from './auth.interfaces';
+import { LoginDto } from './dto/login.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+    private readonly emailsService: EmailsService,
+  ) {}
+
+  async login(loginDto: LoginDto): Promise<{ access_token: string }> {
+    try {
+      const user = await this.usersService.findByEmail(loginDto.email);
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+
+      if (!user.active) {
+        console.log('Usuário inativo');
+        throw new UnauthorizedException();
+      }
+
+      const isValid = await this.encryptService.compare(
+        loginDto.password,
+        user?.password,
+      );
+      if (!isValid) {
+        throw new UnauthorizedException();
+      }
+      const payload = { sub: user.id, email: user.email, admin: false };
+      const accessToken = await this.jwtService.signAsync(payload);
+      return {
+        access_token: accessToken,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new UnauthorizedException();
+    }
+  }
+
+  async me(request: Request) {
+    try {
+      const { user } = request as any;
+      const record = await this.usersService.findOne(user.sub);
+      return record;
+    } catch (error) {
+      console.log(error);
+      /**
+       * @todo implementar tratamento de errors
+       */
+    }
+  }
+
+  async getPayloadFromToken(token: string): Promise<RequestUser> {
+    const { sub, ...payload } = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    return { id: sub, ...payload };
+  }
+
+  async recoveryPassword(recoveryPasswordDto: RecoveryPasswordDto) {
+    const user = await this.usersService.findByEmail(recoveryPasswordDto.email);
+    if (!user) {
+      throw new BadRequestException('Usuário não identificado');
+    }
+    try {
+      const randomNumber = Math.floor(100000 + Math.random() * 900000);
+      const token = `${randomNumber}`;
+      await this.usersService.update(user.id, {
+        token,
+      });
+      await this.emailsService.sendRecoveryPasswordMail(
+        recoveryPasswordDto.email,
+        token,
+      );
+      return {
+        message: 'Email de recuperação de senha enviado com sucesso',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Erro interno');
+    }
+  }
+
+  async newPassword(newPasswordDto: NewPasswordDto) {
+    const { token, password } = newPasswordDto;
+    const user = await this.usersService.findByToken(token);
+
+    if (!user) {
+      throw new BadRequestException('Usuário não identificado');
+    }
+
+    try {
+      await this.usersService.update(user.id, {
+        token: null,
+        password,
+      });
+      return await this.emailsService.sendChangedPasswordMail(user.email);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Erro interno');
+    }
+  }
+}

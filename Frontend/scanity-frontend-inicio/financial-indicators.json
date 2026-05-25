@@ -1,0 +1,29 @@
+{
+  "avg_ticket_value": 167.1,
+  "total_revenue": 1450,
+  "total_expenses": 9.5,
+  "total_commands_per_month": [
+    {
+      "month": "2025-09",
+      "count": 17
+    }
+  ],
+  "total_order_value_per_day": [
+    {
+      "date": "2025-09-09",
+      "total_value": 310
+    },
+    {
+      "date": "2025-09-15",
+      "total_value": 600
+    },
+    {
+      "date": "2025-09-20",
+      "total_value": 220
+    },
+    {
+      "date": "2025-09-21",
+      "total_value": 1710
+    }
+  ]
+}

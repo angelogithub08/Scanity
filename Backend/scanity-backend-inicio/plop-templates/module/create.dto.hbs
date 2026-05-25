@@ -1,0 +1,17 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsEmail, IsOptional, IsBoolean, IsDate } from 'class-validator';
+
+export class Create{{pascalCase module}}Dto {
+{{#each (splitFields fields)}}
+  @ApiProperty({
+    description: 'Propriedade {{this.name}}',
+    example: {{{this.example}}},
+    {{#if this.required}}required: true{{else}}required: false{{/if}}
+  })
+  {{#if this.validator}}@{{this.validator}}{{else}}@IsString(){{/if}}
+  {{#unless this.required}}@IsOptional(){{/unless}}
+  {{this.name}}: {{this.type}};
+
+{{/each}}
+}
+

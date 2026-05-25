@@ -1,0 +1,123 @@
+<template>
+  <DefaultPage>
+    <template #header>
+      <RecordPageHeader title="{{capitalizeCase singular_pt}}" @back="back" @save="save" />
+    </template>
+    <template #content>
+      <q-form ref="formRef" @submit="save">
+        <div class="row q-col-gutter-md">
+        {{#each (getColumns fields)}}
+            <div class="col-12 {{#if (eq ../columns '1')}}{{else if (eq ../columns '2')}}col-md-6{{else if (eq ../columns '4')}}col-md-3{{else}}col-md-4{{/if}}">
+                <q-input 
+                  v-model="record.{{this.name}}" 
+                  label="{{this.label}}" 
+                  bg-color="white" 
+                  outlined 
+                  lazy-rules
+                  {{#if this.isEmail}}
+                  :rules="[{{#if this.isRequired}}validation.isValidEmail, validation.required{{else}}validation.isValidEmail{{/if}}]"
+                  {{else if this.isPhone}}
+                  :rules="[{{#if this.isRequired}}validation.isValidPhone, validation.required{{else}}validation.isValidPhone{{/if}}]"
+                  {{else if this.isDocument}}
+                  :rules="[{{#if this.isRequired}}validation.documentIsValid, validation.required{{else}}validation.documentIsValid{{/if}}]"
+                  {{else if this.isZipCode}}
+                  :rules="[{{#if this.isRequired}}validation.isValidZipCode, validation.required{{else}}validation.isValidZipCode{{/if}}]"
+                  {{else if this.isState}}
+                  :rules="[{{#if this.isRequired}}validation.isValidState, validation.required{{else}}validation.isValidState{{/if}}]"
+                  {{else if this.isPrice}}
+                  :rules="[{{#if this.isRequired}}validation.requiredPrice{{else}}validation.requiredPrice{{/if}}]"
+                  {{else if this.isNumber}}
+                  :rules="[{{#if this.isRequired}}validation.requiredNumber{{else}}validation.requiredNumber{{/if}}]"
+                  {{else if this.isRequired}}
+                  :rules="[validation.required]"
+                  {{/if}}
+                />
+            </div>
+        {{/each}}
+        </div>
+      </q-form>
+    </template>
+  </DefaultPage>
+</template>
+
+<script setup lang="ts">
+import { Notify, QForm, Loading } from 'quasar';
+import type { {{pascalCase singular}} } from 'src/interfaces/{{kebabCase module}}';
+import { reactive, ref, onMounted, computed } from 'vue';
+import DefaultPage from 'src/components/shared/pages/DefaultPage.vue';
+import RecordPageHeader from 'src/components/shared/pages/RecordPageHeader.vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useValidation } from 'src/composables/useValidation';
+import { useHandleException } from 'src/composables/useHandleException';
+import { use{{pascalCase module}}Resource } from 'src/composables/api/use{{pascalCase module}}Resource';
+import { useAccountsStore } from 'src/stores/accounts';
+
+const router = useRouter();
+const route = useRoute();
+const validation = useValidation();
+const { showError } = useHandleException();
+const resource = use{{pascalCase module}}Resource();
+const accountsStore = useAccountsStore();
+
+const formRef = ref<InstanceType<typeof QForm>>();
+
+const record = reactive<Partial<{{pascalCase singular}}>>({
+  id: null,
+  {{#each (getColumns fields) }}
+  {{this.name}}: null,
+  {{/each}}
+});
+
+const currentAccount = computed(() => accountsStore.currentAccount);
+
+async function back() {
+  await router.push({ name: '{{kebabCase module}}' });
+}
+
+async function save() {
+  try {
+    const valid = await formRef.value?.validate();
+    if (valid) {
+      Loading.show();
+      let response;
+      const recordData = {
+        ...record,
+        account_id: currentAccount.value?.id,
+      } as Partial<{{pascalCase singular}}>;
+
+      if (record.id) {
+        response = await resource.update(record.id.toString(), recordData);
+      } else {
+        response = await resource.create(recordData);
+      }
+      
+      Object.assign(record, response.data);
+      Notify.create({
+        message: `Operação realizada com sucesso`,
+        color: 'positive',
+        icon: 'check',
+      });
+    }
+  } catch (error) {
+    showError(error);
+  } finally {
+    Loading.hide();
+  }
+}
+
+onMounted(async () => {
+  if (route.params.id) {
+    try {
+      Loading.show();
+      const id = route.params.id as string;
+      const response = await resource.findById(id);
+      Object.assign(record, response.data);
+    } catch (error) {
+      console.error(error);
+      showError(error);
+    } finally {
+      Loading.hide();
+    }
+  }
+});
+</script>

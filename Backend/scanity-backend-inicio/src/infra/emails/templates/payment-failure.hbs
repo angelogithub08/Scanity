@@ -1,0 +1,64 @@
+<div style="text-align: center; margin-bottom: 20px;">
+  <div style="font-size: 48px; color: #ef4444;">❌</div>
+</div>
+
+<h2 style="color: #dc2626; text-align: center; margin-bottom: 30px;">Falha no Processamento do Pagamento</h2>
+
+<p>Olá <strong>{{userName}}</strong>,</p>
+
+<p>Infelizmente, não conseguimos processar seu pagamento. Mas não se preocupe, isso pode ser resolvido facilmente!</p>
+
+<div style="background-color: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; margin: 20px 0;">
+  <h3 style="margin-top: 0; color: #dc2626;">Detalhes da Tentativa</h3>
+  <p><strong>Valor:</strong> R$ {{amount}}</p>
+  <p><strong>Data da Tentativa:</strong> {{attemptDate}}</p>
+  <p><strong>Método:</strong> {{paymentMethod}}</p>
+  {{#if errorReason}}
+  <p><strong>Motivo:</strong> {{errorReason}}</p>
+  {{/if}}
+</div>
+
+<div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+  <h3 style="margin-top: 0; color: #d97706;">🛠️ Como Resolver</h3>
+  <ul style="margin-bottom: 0;">
+    <li>Verifique se os dados do seu cartão estão corretos</li>
+    <li>Confirme se há saldo suficiente disponível</li>
+    <li>Entre em contato com seu banco para verificar possíveis bloqueios</li>
+    <li>Tente novamente em alguns minutos</li>
+  </ul>
+</div>
+
+{{#if nextRetryDate}}
+<div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 15px; margin: 20px 0;">
+  <p style="margin: 0;"><strong>🔄 Próxima Tentativa Automática:</strong> {{nextRetryDate}}</p>
+</div>
+{{/if}}
+
+{{#if gracePeriodEnd}}
+<div class="warning">
+  <strong>⏰ Importante:</strong>
+  Seu acesso será mantido até <strong>{{gracePeriodEnd}}</strong>. Após essa data, seu plano pode ser suspenso temporariamente.
+</div>
+{{/if}}
+
+{{#if paymentUrl}}
+<p style="text-align: center; margin: 30px 0;">
+  <a href="{{paymentUrl}}" class="button">
+    Atualizar Pagamento
+  </a>
+</p>
+{{/if}}
+
+{{#if supportUrl}}
+<p style="text-align: center;">
+  <a href="{{supportUrl}}" style="color: #6366f1; text-decoration: underline;">
+    Precisa de ajuda? Entre em contato conosco
+  </a>
+</p>
+{{/if}}
+
+<div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 15px; margin: 20px 0;">
+  <p style="margin: 0;"><strong>💬 Dica:</strong> Nossa equipe de suporte está sempre disponível para ajudar você a resolver qualquer problema com pagamentos.</p>
+</div>
+
+<p>Estamos aqui para ajudar e resolver essa situação o mais rápido possível!</p>

@@ -1,0 +1,67 @@
+export function useFiles() {
+  function getFileType(filename: string) {
+    if (!filename) return 'Desconhecido';
+    const extension = filename.split('.').pop()?.toLowerCase();
+    const types: Record<string, string> = {
+      pdf: 'PDF',
+      doc: 'Word',
+      docx: 'Word',
+      xls: 'Excel',
+      xlsx: 'Excel',
+      ppt: 'PowerPoint',
+      pptx: 'PowerPoint',
+      jpg: 'Imagem',
+      jpeg: 'Imagem',
+      png: 'Imagem',
+      gif: 'Imagem',
+      txt: 'Texto',
+      zip: 'Arquivo ZIP',
+      rar: 'Arquivo RAR',
+    };
+    return types[extension || ''] || 'Arquivo';
+  }
+
+  function isImage(filename: string) {
+    if (!filename) return false;
+    const extension = filename.split('.').pop()?.toLowerCase();
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+    return imageExtensions.includes(extension || '');
+  }
+
+  function getFileIcon(filename: string) {
+    if (!filename) return 'insert_drive_file';
+    const extension = filename.split('.').pop()?.toLowerCase();
+    const icons: Record<string, string> = {
+      pdf: 'picture_as_pdf',
+      doc: 'description',
+      docx: 'description',
+      xls: 'table_chart',
+      xlsx: 'table_chart',
+      ppt: 'slideshow',
+      pptx: 'slideshow',
+      txt: 'article',
+      zip: 'folder_zip',
+      rar: 'folder_zip',
+      mp3: 'audio_file',
+      wav: 'audio_file',
+      mp4: 'video_file',
+      avi: 'video_file',
+      mov: 'video_file',
+    };
+    return icons[extension || ''] || 'insert_drive_file';
+  }
+
+  function formatFileSize(size?: number): string {
+    if (!size) return 'Desconhecido';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let formattedSize = size;
+    let unitIndex = 0;
+    while (formattedSize >= 1024 && unitIndex < units.length - 1) {
+      formattedSize /= 1024;
+      unitIndex++;
+    }
+    return `${formattedSize.toFixed(1)} ${units[unitIndex]}`;
+  }
+
+  return { getFileType, isImage, getFileIcon, formatFileSize };
+} 

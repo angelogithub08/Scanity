@@ -1,0 +1,38 @@
+import { NewPasswordDto } from '../dto/new-password.dto';
+
+import { RecoveryPasswordDto } from '../dto/recovery-password.dto';
+
+import { LoginDto } from '../dto/login.dto';
+
+export const admin = {
+  id: '440af012-a5ce-4c07-a1b9-1ecdbf8bbe4e',
+  email: 'teste@teste.com',
+  password: '$2b$10$ejofXdJkIItGG9ZdrPdInuk4GqoGL0a3c7HnItVWQAvhKfEsk3BJG',
+  is_active: true,
+  account_id: '440af012-a5ce-4c07-a1b9-1ecdbf8bbe4e',
+};
+
+export const admin3 = {
+  id: '1',
+  email: 'teste@teste.com',
+  password: '$2b$10$ejofXdJkIItGG9ZdrPdInuk4GqoGL0a3c7HnItVWQAvhKfEsk3BJG',
+  is_active: true,
+  account_id: '1',
+};
+
+export const mockedToken: string =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+
+export const newPasswordDto: NewPasswordDto = {
+  token: '123456',
+  password: '123456',
+};
+
+export const recoveryPasswordDto: RecoveryPasswordDto = {
+  email: 'teste@teste.com',
+};
+
+export const loginDto: LoginDto = {
+  email: 'teste@teste.com',
+  password: '123456',
+};

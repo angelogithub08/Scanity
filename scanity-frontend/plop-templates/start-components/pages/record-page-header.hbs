@@ -1,0 +1,42 @@
+<template>
+  <div class="row items-center justify-between">
+    <div class="col-12 col-sm-4 col-md-6 col-lg-8">
+      <div class="text-h6">\{{ title }}</div>
+    </div>
+    <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+      <div class="fit row wrap">
+        <slot name="actions">
+          <div class="fit row wrap justify-end">
+            <q-btn
+              @click="$emit('back')"
+              icon="arrow_back"
+              color="primary"
+              label="Voltar"
+              class="q-ml-sm"
+              flat
+            />
+            <q-btn
+              @click="$emit('save')"
+              icon="check"
+              color="primary"
+              label="Salvar"
+              class="q-ml-sm"
+              unelevated
+            />
+          </div>
+        </slot>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps({
+  title: {
+    type: String,
+    required: true,
+  },
+});
+
+defineEmits(['back', 'save']);
+</script>

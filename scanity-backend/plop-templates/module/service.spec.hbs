@@ -1,0 +1,275 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { {{pascalCase module}}Service } from './{{kebabCase module}}.service';
+import { {{pascalCase module}}Repository } from './{{kebabCase module}}.repository';
+import { Create{{pascalCase module}}Dto } from './dto/create-{{kebabCase module}}.dto';
+import { List{{pascalCase module}}ParamsDto, ListPaginated{{pascalCase module}}ParamsDto } from './dto/params-{{kebabCase module}}.dto';
+import { {{pascalCase singular}} } from './entities/{{kebabCase singular}}.entity';
+
+interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  last_page: number;
+}
+
+describe('{{pascalCase module}}Service', () => {
+  let service: {{pascalCase module}}Service;
+  let repository: {{pascalCase module}}Repository;
+
+  // Mock data para {{singular}}
+  const mock{{pascalCase singular}} = {
+    id: 1,
+{{#each (splitFields fields)}}
+    {{#if (eq type "string")}}{{name}}: "Test {{name}}"{{else if (eq type "number")}}{{name}}: 1{{else if (eq type "boolean")}}{{name}}: true{{else if (eq type "Date")}}{{name}}: new Date(){{else}}{{name}}: "Test value"{{/if}},
+{{/each}}
+    created_at: new Date(),
+    updated_at: new Date(),
+  } as unknown as {{pascalCase singular}};
+
+  const mockPaginatedResult: PaginatedResult<{{pascalCase singular}}> = {
+    data: [mock{{pascalCase singular}}],
+    total: 1,
+    page: 1,
+    last_page: 1
+  };
+
+  // Mock para o DTO de criação
+  const mockCreateDto: Create{{pascalCase module}}Dto = {
+{{#each (splitFields fields)}}
+    {{#if (eq type "string")}}{{name}}: "Test {{name}}"{{else if (eq type "number")}}{{name}}: 1{{else if (eq type "boolean")}}{{name}}: true{{else if (eq type "Date")}}{{name}}: new Date(){{else}}{{name}}: "Test value"{{/if}},
+{{/each}}
+  };
+
+  // Mock para o DTO de atualização
+  const mockUpdateDto: Partial<Create{{pascalCase module}}Dto> = {
+{{#each (splitFields fields)}}
+    {{#if (eq type "string")}}{{name}}: "Updated {{name}}"{{else if (eq type "number")}}{{name}}: 2{{else if (eq type "boolean")}}{{name}}: false{{else if (eq type "Date")}}{{name}}: new Date(){{else}}{{name}}: "Updated value"{{/if}},
+{{/each}}
+  };
+
+  // Mock para dados após atualização
+  const mockUpdated{{pascalCase singular}} = {
+    ...mock{{pascalCase singular}},
+    ...mockUpdateDto,
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        {{pascalCase module}}Service,
+        {
+          provide: {{pascalCase module}}Repository,
+          useValue: {
+            create: jest.fn().mockResolvedValue(mock{{pascalCase singular}}),
+            findAll: jest.fn().mockResolvedValue(mockPaginatedResult),
+            list: jest.fn().mockResolvedValue([mock{{pascalCase singular}}]),
+            findOne: jest.fn().mockResolvedValue(mock{{pascalCase singular}}),
+            update: jest.fn().mockResolvedValue(mockUpdated{{pascalCase singular}}),
+            remove: jest.fn().mockResolvedValue(1),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<{{pascalCase module}}Service>({{pascalCase module}}Service);
+    repository = module.get<{{pascalCase module}}Repository>({{pascalCase module}}Repository);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+    expect(repository).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('should create a {{singular}} successfully', async () => {
+      const result = await service.create(mockCreateDto);
+      
+      expect(repository.create).toHaveBeenCalledWith(mockCreateDto);
+      expect(result).toEqual(mock{{pascalCase singular}});
+    });
+
+    it('should throw BadRequestException on create error', async () => {
+      jest.spyOn(repository, 'create').mockRejectedValueOnce(new Error('Database error'));
+      
+      try {
+        await service.create(mockCreateDto);
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Erro ao criar {{pascalCase singular}}');
+      }
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return paginated {{singular}}s', async () => {
+      const params: ListPaginated{{pascalCase module}}ParamsDto = { page: 1, limit: 10 };
+      const result = await service.findAll(params);
+      
+      expect(repository.findAll).toHaveBeenCalledWith(params);
+      expect(result).toEqual(mockPaginatedResult);
+    });
+
+    it('should throw BadRequestException on findAll error', async () => {
+      const params: ListPaginated{{pascalCase module}}ParamsDto = { page: 1, limit: 10 };
+      
+      jest.spyOn(repository, 'findAll').mockImplementationOnce(() => {
+        throw new Error('Database error');
+      });
+      
+      try {
+        await service.findAll(params);
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Erro ao buscar {{pascalCase module}} paginados');
+      }
+    });
+  });
+
+  describe('list', () => {
+    it('should return all {{singular}}s', async () => {
+      const params: List{{pascalCase module}}ParamsDto = {};
+      const result = await service.list(params);
+      
+      expect(repository.list).toHaveBeenCalledWith(params);
+      expect(result).toEqual([mock{{pascalCase singular}}]);
+    });
+
+    it('should throw BadRequestException on list error', async () => {
+      const params: List{{pascalCase module}}ParamsDto = {};
+      
+      jest.spyOn(repository, 'list').mockImplementationOnce(() => {
+        throw new Error('Database error');
+      });
+      
+      try {
+        await service.list(params);
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Erro ao listar {{pascalCase module}}');
+      }
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a {{singular}} by id', async () => {
+      const result = await service.findOne("mock-id");
+      
+      expect(repository.findOne).toHaveBeenCalledWith("mock-id");
+      expect(result).toEqual(mock{{pascalCase singular}});
+    });
+
+    it('should rethrow NotFoundException from repository', async () => {
+      jest.spyOn(repository, 'findOne').mockRejectedValueOnce(new NotFoundException('{{pascalCase singular}} not found'));
+      
+      try {
+        await service.findOne("not-found");
+        fail('Expected NotFoundException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect((error as NotFoundException).message).toContain('{{pascalCase singular}} not found');
+      }
+    });
+
+    it('should rethrow BadRequestException from repository', async () => {
+      jest.spyOn(repository, 'findOne').mockRejectedValueOnce(new BadRequestException('Invalid ID'));
+      
+      try {
+        await service.findOne("invalid-id");
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Invalid ID');
+      }
+    });
+
+    it('should wrap other errors in BadRequestException', async () => {
+      jest.spyOn(repository, 'findOne').mockImplementationOnce(() => {
+        throw new Error('Database error');
+      });
+      
+      try {
+        await service.findOne("error-id");
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Erro ao buscar {{pascalCase singular}}');
+      }
+    });
+  });
+
+  describe('update', () => {
+    it('should update a {{singular}}', async () => {
+      const result = await service.update("mock-id", mockUpdateDto);
+      
+      expect(repository.update).toHaveBeenCalledWith("mock-id", mockUpdateDto);
+      expect(result).toEqual(mockUpdated{{pascalCase singular}});
+    });
+
+    it('should rethrow NotFoundException from repository', async () => {
+      jest.spyOn(repository, 'update').mockRejectedValueOnce(new NotFoundException('{{pascalCase singular}} not found'));
+      
+      try {
+        await service.update("not-found", mockUpdateDto);
+        fail('Expected NotFoundException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect((error as NotFoundException).message).toContain('{{pascalCase singular}} not found');
+      }
+    });
+
+    it('should wrap other errors in BadRequestException', async () => {
+      jest.spyOn(repository, 'update').mockImplementationOnce(() => {
+        throw new Error('Database error');
+      });
+      
+      try {
+        await service.update("error-id", mockUpdateDto);
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Erro ao atualizar {{pascalCase singular}}');
+      }
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a {{singular}}', async () => {
+      const result = await service.remove("mock-id");
+      
+      expect(repository.remove).toHaveBeenCalledWith("mock-id");
+      expect(result).toHaveProperty('success', true);
+      expect(result).toHaveProperty('message');
+    });
+
+    it('should rethrow NotFoundException from repository', async () => {
+      jest.spyOn(repository, 'remove').mockRejectedValueOnce(new NotFoundException('{{pascalCase singular}} not found'));
+      
+      try {
+        await service.remove("not-found");
+        fail('Expected NotFoundException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect((error as NotFoundException).message).toContain('{{pascalCase singular}} not found');
+      }
+    });
+
+    it('should wrap other errors in BadRequestException', async () => {
+      jest.spyOn(repository, 'remove').mockImplementationOnce(() => {
+        throw new Error('Database error');
+      });
+      
+      try {
+        await service.remove("error-id");
+        fail('Expected BadRequestException to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).message).toContain('Erro ao remover {{pascalCase singular}}');
+      }
+    });
+  });
+});

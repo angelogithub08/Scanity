@@ -1,0 +1,8 @@
+services:
+  scanity-backend:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '${APP_PORT}:${APP_PORT}'

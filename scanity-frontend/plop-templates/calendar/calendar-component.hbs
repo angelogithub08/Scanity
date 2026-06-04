@@ -1,0 +1,86 @@
+<template>
+  <div class="calendar-container">
+    <FullCalendar :options="calendarOptions" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import FullCalendar from '@fullcalendar/vue3';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+import interactionPlugin from '@fullcalendar/interaction';
+import ptBrLocale from '@fullcalendar/core/locales/pt-br';
+import type { CalendarItem } from 'src/interfaces/calendar-items';
+
+// Defina as propriedades do componente
+interface Props {
+  items?: CalendarItem[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  items: () => [],
+});
+
+// Emite eventos
+const emit = defineEmits(['dateClick', 'itemClick']);
+
+// Configura as opções do calendário
+const calendarOptions = ref({
+  plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+  initialView: 'dayGridMonth',
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+  },
+  locale: ptBrLocale,
+  events: props.items,
+  height: '100%',
+  aspectRatio: 1.35,
+  handleWindowResize: true,
+  stickyHeaderDates: true,
+  dayMaxEvents: true,
+  navLinks: true,
+  editable: true,
+  selectable: true,
+  selectMirror: true,
+  weekends: true,
+  nowIndicator: true,
+  slotMinTime: '00:00:00',
+  slotMaxTime: '24:00:00',
+  fixedWeekCount: false,
+  dateClick: function (arg: any) {
+    emit('dateClick', arg);
+  },
+  eventClick: function (arg: any) {
+    emit('itemClick', arg);
+  },
+});
+
+// Observar mudanças nos itens
+watch(
+  () => props.items,
+  function (newItems) {
+    calendarOptions.value.events = newItems;
+  },
+  { deep: true },
+);
+</script>
+
+<style scoped>
+.calendar-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+:deep(.fc) {
+  font-family: var(--q-font-family, inherit);
+}
+
+:deep(.fc-button) {
+  border-radius: 4px;
+}
+</style>

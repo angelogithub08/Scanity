@@ -1,0 +1,26 @@
+<h2>Solicitacao de exclusao de conta</h2>
+
+<p>Ola{{#if userName}} {{userName}}{{/if}},</p>
+
+<p>Recebemos uma solicitacao para excluir permanentemente a sua conta na plataforma.</p>
+
+<p>Se foi voce quem solicitou, clique no botao abaixo para confirmar:</p>
+
+<p style="text-align: center; margin: 30px 0;">
+  <a
+    href="{{apiUrl}}/accounts/confirm-delete-account?token={{token}}"
+    style="
+      display: inline-block;
+      background-color: #d32f2f;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+    "
+  >
+    Confirmar exclusao da conta
+  </a>
+</p>
+
+<p>Se voce nao solicitou essa acao, ignore este e-mail e sua conta permanecera ativa.</p>

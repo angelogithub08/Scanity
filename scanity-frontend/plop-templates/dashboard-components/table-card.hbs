@@ -1,0 +1,50 @@
+<template>
+  <q-card class="table-card" flat bordered>
+    <q-card-section>
+      <div class="text-h6 q-mb-md">\{{ title }}</div>
+      <q-table
+        :rows="rows"
+        :columns="columns"
+        row-key="id"
+        :pagination="{ rowsPerPage: 5 }"
+        flat
+        dense
+      >
+        <template v-slot:body-cell-status="props">
+          <q-td :props="props">
+            <q-chip :color="getStatusColor(props.value)" text-color="white" dense size="sm">
+              \{{ props.value }}
+            </q-chip>
+          </q-td>
+        </template>
+      </q-table>
+    </q-card-section>
+  </q-card>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  title: string;
+  rows: any[];
+  columns: any[];
+}>();
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'Concluído':
+      return 'positive';
+    case 'Em andamento':
+      return 'warning';
+    case 'Pendente':
+      return 'negative';
+    default:
+      return 'grey';
+  }
+};
+</script>
+
+<style scoped>
+.table-card {
+  height: 100%;
+}
+</style> 

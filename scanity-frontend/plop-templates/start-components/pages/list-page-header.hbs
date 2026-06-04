@@ -1,0 +1,48 @@
+<template>
+  <div class="row items-center justify-between">
+    <div class="col-12 col-sm-4 col-md-6 col-lg-8">
+      <div class="text-h6">\{{ title }}</div>
+    </div>
+    <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+      <div class="fit row wrap">
+        <q-input
+          v-model="search"
+          @keyup.enter="filtrate"
+          placeholder="Pesquisar"
+          outlined
+          dense
+          bg-color="white"
+          class="col-grow"
+        >
+          <template v-slot:append>
+            <q-btn icon="search" @click="filtrate" dense flat round />
+          </template>
+        </q-input>
+        <q-btn icon="add" @click="add" color="primary" label="Novo" class="q-ml-sm" unelevated />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+
+defineProps({
+  title: {
+    type: String,
+    required: true,
+  },
+});
+
+const emit = defineEmits(['filtrate', 'add']);
+
+const search = ref('');
+
+function filtrate() {
+  emit('filtrate', search.value);
+}
+
+function add() {
+  emit('add');
+}
+</script>

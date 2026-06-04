@@ -1,0 +1,30 @@
+<template>
+  <q-dialog v-model='show'>
+    <q-card>
+      <q-card-section>
+        <div class='text-h6'>\{{title}}</div>
+      </q-card-section>
+
+      <q-card-section class='q-pt-none'>
+        <!-- Conteúdo da dialog -->
+        <slot>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis illo iste numquam
+          cumque, itaque sit eveniet, nisi iusto dolorem, quibusdam magni. Iure hic nostrum, vero
+          dolorem suscipit nemo perspiciatis quis.
+        </slot>
+      </q-card-section>
+
+      <q-card-actions align='right'>
+        <q-btn flat label='Cancelar' color='primary' v-close-popup />
+        <q-btn flat label='Salvar' color='primary' @click='submit' />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+</template>
+
+<script setup lang='ts'>
+  import { ref } from 'vue'; const emit = defineEmits(['submit']); defineProps({ title: { type:
+  String, default: 'Título da Dialog' } }); const show = ref(false); function open() { show.value =
+  true; } function close() { show.value = false; } function submit() { emit('submit'); close(); }
+  defineExpose({ open, close });
+</script>

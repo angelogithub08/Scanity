@@ -1,0 +1,93 @@
+export function useMask() {
+  const mask = {
+    phone: '(##) #####-####',
+    cpf: '###.###.###-##',
+    cnpj: '##.###.###/####-##',
+    rg: '##.###.###-#',
+    zipCode: '#####-###',
+    document: '',
+  };
+
+  const cpfCnpjMaskOptions = {
+    mask: ['###.###.###-##', '##.###.###/####-##'],
+    eager: true,
+  };
+
+  const moneyConfig = {
+    debug: false,
+    masked: false,
+    prefix: 'R$ ',
+    suffix: '',
+    thousands: '.',
+    decimal: ',',
+    precision: 2,
+    disableNegative: false,
+    disabled: false,
+    min: null,
+    max: null,
+    allowBlank: false,
+    minimumNumberOfCharacters: 0,
+    modelModifiers: {
+      number: false,
+    },
+    shouldRound: true,
+    focusOnRight: false,
+  };
+
+  function cpfCnpjMask(value?: string | null) {
+    if (!value) return value;
+    return value.replace(/\D/g, '').length > 11
+      ? '##.###.###/####-##' // CNPJ
+      : '###.###.###-##'; // CPF
+  }
+
+  function onlyNumbers(value: string) {
+    if (!value) return value;
+    return value.replace(/\D/g, '');
+  }
+
+  function onlyLetters(value: string) {
+    if (!value) return value;
+    return value.replace(/[^a-zA-Z]/g, '');
+  }
+
+  function applyMask(value: string, maskKey: keyof typeof mask) {
+    let maskPattern = mask[maskKey];
+    if (maskKey === 'document') {
+      if (!value) return value;
+      if (value.length === 11) {
+        maskPattern = mask.cpf;
+      } else if (value.length === 14) {
+        maskPattern = mask.cnpj;
+      } else if (value.length === 8) {
+        // Exemplo de máscara para RM (Registro Municipal): '########' (sem máscara)
+        maskPattern = '########';
+      } else {
+        // Se não bater com nenhum, não aplica máscara
+        return value;
+      }
+    }
+    if (!maskPattern || !value) return value;
+    let masked = '';
+    let valueIndex = 0;
+    for (let i = 0; i < maskPattern.length && valueIndex < value.length; i++) {
+      if (maskPattern[i] === '#') {
+        masked += value[valueIndex];
+        valueIndex++;
+      } else {
+        masked += maskPattern[i];
+      }
+    }
+    return masked;
+  }
+
+  return {
+    mask,
+    moneyConfig,
+    cpfCnpjMaskOptions,
+    onlyNumbers,
+    onlyLetters,
+    applyMask,
+    cpfCnpjMask,
+  };
+} 

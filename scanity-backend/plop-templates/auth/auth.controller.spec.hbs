@@ -1,0 +1,102 @@
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
+import { EmailsService } from '../../infra/emails/emails.service';
+import { UsersService } from '../users/users.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import {
+  admin3,
+  loginDto,
+  mockedToken,
+  newPasswordDto,
+  recoveryPasswordDto,
+} from './mocks/auth.mocks';
+
+describe('AuthController', () => {
+  let controller: AuthController;
+
+  const usersServiceMock = {
+    findByEmail: jest.fn(),
+    update: jest.fn(),
+    findByToken: jest.fn(),
+  };
+
+  const authServiceMock = {
+    login: jest.fn(),
+    recoveryPassword: jest.fn(),
+    newPassword: jest.fn(),
+  };
+
+  const emailsServiceMock = {
+    sendRecoveryPasswordMail: jest.fn(),
+    sendChangedPasswordMail: jest.fn(),
+  };
+
+  const jwtServiceMock = {
+    signAsync: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        UsersService,
+        JwtService,
+        EmailsService,
+      ],
+      controllers: [AuthController],
+    })
+
+      .overrideProvider(UsersService)
+      .useValue(usersServiceMock)
+      .overrideProvider(JwtService)
+      .useValue(jwtServiceMock)
+      .overrideProvider(EmailsService)
+      .useValue(emailsServiceMock)
+      .overrideProvider(AuthService)
+      .useValue(authServiceMock)
+      .compile();
+
+    controller = module.get<AuthController>(AuthController);
+
+    usersServiceMock.findByEmail.mockResolvedValue(admin3);
+    usersServiceMock.findByToken.mockResolvedValue(admin3);
+    usersServiceMock.update.mockResolvedValue({});
+    emailsServiceMock.sendRecoveryPasswordMail.mockResolvedValue({});
+    emailsServiceMock.sendChangedPasswordMail.mockResolvedValue({});
+    jwtServiceMock.signAsync.mockResolvedValue(mockedToken);
+    authServiceMock.login.mockResolvedValue({
+      access_token: mockedToken,
+    });
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('login user', () => {
+    it('should login', async () => {
+      const result = await controller.login(loginDto);
+
+      expect(result).toEqual({
+        access_token: mockedToken,
+      });
+    });
+  });
+
+  describe('recoveryPassword', () => {
+    it('should return undefined', async () => {
+      await controller.recoveryPassword(recoveryPasswordDto);
+
+      expect(authServiceMock.recoveryPassword).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('newPassword', () => {
+    it('should return undefined', async () => {
+      await controller.newPassword(newPasswordDto);
+
+      expect(authServiceMock.newPassword).toHaveBeenCalledTimes(1);
+    });
+  });
+});

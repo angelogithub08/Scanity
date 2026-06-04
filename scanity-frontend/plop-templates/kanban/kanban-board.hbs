@@ -1,0 +1,483 @@
+<template>
+  <div class="kanban-board q-pa-none">
+    <div class="row items-center q-px-md q-pb-lg">
+      <div class="col-12 col-md-8">
+        <div class="row items-center">
+          <div v-if="!isEditingBoardName" class="text-h5 q-mr-md">\{{ selectedBoard.name }}</div>
+          <q-input
+            v-else
+            v-model="editedBoardName"
+            dense
+            outlined
+            class="text-h5 board-name-edit"
+            autofocus
+            @keyup.enter="saveBoardName"
+            @blur="saveBoardName"
+          >
+            <template v-slot:append>
+              <q-btn round dense flat icon="check" @click="saveBoardName" />
+            </template>
+          </q-input>
+          <q-btn
+            v-if="!isEditingBoardName"
+            round
+            dense
+            flat
+            icon="edit"
+            size="sm"
+            color="grey-7"
+            @click="startEditingBoardName"
+          />
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="row items-center no-wrap">
+          <q-btn
+            round
+            dense
+            color="primary"
+            icon="add"
+            class="q-mr-sm"
+            @click="addNewBoard"
+            unelevated
+            size="sm"
+          >
+            <q-tooltip>Novo Board</q-tooltip>
+          </q-btn>
+          <div class="col">
+            <q-select
+              v-model="selectedBoard"
+              :options="boards"
+              option-label="name"
+              label="Selecionar Board"
+              outlined
+              dense
+              class="select-board"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row no-wrap q-gutter-md kanban-content">
+      <draggable
+        v-model="boardColumns"
+        :group="{ name: 'columns' }"
+        item-key="id"
+        :animation="200"
+        handle=".column-drag-handle"
+        class="row no-wrap q-gutter-md"
+      >
+        <template #item="{ element }">
+          <kanban-column
+            :column="element"
+            @open-card-details="openCardDetails"
+            @add-card="addCard"
+            @update-column-cards="updateColumnCards"
+            @move-card="moveCard"
+            @update-column-title="updateColumnTitle"
+          />
+        </template>
+      </draggable>
+
+      <div class="add-column-container bg-grey-2 rounded-borders">
+        <q-btn
+          class="full-width"
+          color="primary"
+          icon="add"
+          label="Nova Coluna"
+          @click="addColumn"
+        />
+      </div>
+    </div>
+
+    <kanban-card-details
+      v-model="cardDetailsVisible"
+      :card-id="selectedCardId || ''"
+      @save="updateCard"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, computed } from 'vue';
+import draggable from 'vuedraggable';
+import KanbanColumn from './KanbanColumn.vue';
+import KanbanCardDetails from './KanbanCardDetails.vue';
+import type { KanbanBoard, KanbanCard, CardAssignee } from 'src/interfaces/kanban';
+
+// Cria um board padrão vazio para evitar undefined
+const emptyBoard: KanbanBoard = {
+  id: '0',
+  name: 'Novo Board',
+  columns: [],
+};
+
+// Dados mockados dos usuários para atribuições
+const users: CardAssignee[] = [
+  { id: '1', name: 'João Silva', avatar: 'https://cdn.quasar.dev/img/boy-avatar.png' },
+  { id: '2', name: 'Maria Santos', avatar: 'https://cdn.quasar.dev/img/avatar.png' },
+  { id: '3', name: 'Pedro Almeida', avatar: 'https://cdn.quasar.dev/img/avatar3.jpg' },
+];
+
+// Dados mockados para os boards
+const boards = ref<KanbanBoard[]>([
+  {
+    id: '1',
+    name: 'Projeto Website',
+    columns: [
+      {
+        id: '1',
+        title: 'Backlog',
+        cards: [
+          {
+            id: '1',
+            title: 'Criar wireframes',
+            description: 'Criar wireframes para todas as páginas do site',
+            priority: 'Média',
+            assignee: users[1],
+          },
+          {
+            id: '2',
+            title: 'Definir arquitetura',
+            description: 'Definir a arquitetura do sistema',
+            priority: 'Alta',
+            assignee: users[0],
+          },
+        ],
+      },
+      {
+        id: '2',
+        title: 'Em Progresso',
+        cards: [
+          {
+            id: '3',
+            title: 'Desenvolver componentes',
+            description: 'Criar componentes reutilizáveis',
+            priority: 'Alta',
+            assignee: users[2],
+          },
+        ],
+      },
+      {
+        id: '3',
+        title: 'Em Revisão',
+        cards: [
+          {
+            id: '4',
+            title: 'Refatorar código',
+            description: 'Melhorar a estrutura do código existente',
+            priority: 'Baixa',
+            assignee: users[0],
+          },
+        ],
+      },
+      {
+        id: '4',
+        title: 'Concluído',
+        cards: [
+          {
+            id: '5',
+            title: 'Configurar ambiente',
+            description: 'Configurar ambiente de desenvolvimento',
+            priority: 'Média',
+            assignee: users[2],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: '2',
+    name: 'Projeto Mobile App',
+    columns: [
+      {
+        id: '5',
+        title: 'Tarefas',
+        cards: [
+          {
+            id: '6',
+            title: 'Design da UI',
+            description: 'Criar o design da interface do usuário',
+            priority: 'Alta',
+            assignee: users[1],
+          },
+        ],
+      },
+      {
+        id: '6',
+        title: 'Em Andamento',
+        cards: [
+          {
+            id: '7',
+            title: 'Implementar autenticação',
+            description: 'Criar sistema de login e registro',
+            priority: 'Alta',
+            assignee: users[0],
+          },
+        ],
+      },
+      {
+        id: '7',
+        title: 'Concluído',
+        cards: [],
+      },
+    ],
+  },
+]);
+
+// Estado
+const selectedBoard = ref<KanbanBoard>(boards.value[0] || emptyBoard);
+const cardDetailsVisible = ref(false);
+const selectedCardId = ref<string | undefined>(undefined);
+const isEditingBoardName = ref(false);
+const editedBoardName = ref('');
+
+// Computed para acessar e manipular as colunas do board selecionado
+const boardColumns = computed({
+  get: () => selectedBoard.value.columns,
+  set: (newColumns) => {
+    selectedBoard.value.columns = [...newColumns];
+  }
+});
+
+// Função para adicionar um novo board
+function addNewBoard() {
+  // Encontre o maior ID de board existente para gerar um novo
+  const maxBoardId = boards.value
+    .map(board => parseInt(board.id))
+    .reduce((max, id) => Math.max(max, id), 0);
+  
+  // Crie um novo board com colunas padrão
+  const newBoard: KanbanBoard = {
+    id: `${maxBoardId + 1}`,
+    name: `Novo Board ${maxBoardId + 1}`,
+    columns: [
+      {
+        id: '1',
+        title: 'A Fazer',
+        cards: []
+      },
+      {
+        id: '2',
+        title: 'Em Progresso',
+        cards: []
+      },
+      {
+        id: '3',
+        title: 'Concluído',
+        cards: []
+      }
+    ]
+  };
+  
+  // Adicione o novo board à lista
+  boards.value.push(newBoard);
+  
+  // Selecione automaticamente o novo board
+  selectedBoard.value = newBoard;
+  
+  // Entre no modo de edição para permitir alterar imediatamente o nome padrão
+  startEditingBoardName();
+}
+
+// Métodos para edição do nome do board
+function startEditingBoardName() {
+  editedBoardName.value = selectedBoard.value.name;
+  isEditingBoardName.value = true;
+}
+
+function saveBoardName() {
+  // Verificamos se temos um valor válido para editar
+  const trimmedName = editedBoardName.value.trim();
+  if (!trimmedName || !selectedBoard.value) {
+    // Se não tivermos um nome válido ou um board selecionado, apenas saímos do modo de edição
+    isEditingBoardName.value = false;
+    return;
+  }
+  
+  // Se chegamos aqui, temos certeza que selectedBoard.value existe
+  selectedBoard.value.name = trimmedName;
+  
+  // Atualizamos o nome no array de boards
+  const currentBoard = selectedBoard.value; // Armazenamos em uma constante para evitar reatribuição durante o uso
+  const boardIndex = boards.value.findIndex(b => b.id === currentBoard.id);
+  
+  if (boardIndex !== -1 && boards.value[boardIndex]) {
+    boards.value[boardIndex].name = trimmedName;
+    
+    // Aqui poderia ser adicionada uma chamada para API para salvar a alteração
+    // Exemplo: updateBoardApi(currentBoard.id, { name: trimmedName });
+  }
+  
+  // Saímos do modo de edição
+  isEditingBoardName.value = false;
+}
+
+// Métodos
+function openCardDetails(cardId: string) {
+  selectedCardId.value = cardId;
+  cardDetailsVisible.value = true;
+}
+
+function updateCard(updatedCard: KanbanCard) {
+  // Atualize o card em todas as colunas
+  selectedBoard.value.columns.forEach((column) => {
+    const cardIndex = column.cards.findIndex((card) => card.id === updatedCard.id);
+    if (cardIndex !== -1) {
+      column.cards[cardIndex] = { ...updatedCard };
+    }
+  });
+}
+
+function addCard(columnId: string) {
+  const column = selectedBoard.value.columns.find((col) => col.id === columnId);
+  if (column) {
+    // Encontre o maior ID de card existente para gerar um novo
+    const maxCardId = selectedBoard.value.columns
+      .flatMap((col) => col.cards.map((card) => parseInt(card.id)))
+      .reduce((max, id) => Math.max(max, id), 0);
+
+    // Adicione um novo card à coluna
+    column.cards.push({
+      id: `${maxCardId + 1}`,
+      title: 'Novo card',
+      description: 'Descrição do novo card',
+    });
+  }
+}
+
+function addColumn() {
+  // Encontre o maior ID de coluna existente para gerar um novo
+  const maxColumnId = selectedBoard.value.columns
+    .map((col) => parseInt(col.id))
+    .reduce((max, id) => Math.max(max, id), 0);
+
+  // Adicione uma nova coluna ao board
+  selectedBoard.value.columns.push({
+    id: `${maxColumnId + 1}`,
+    title: 'Nova Coluna',
+    cards: [],
+  });
+}
+
+// Função para atualizar os cards de uma coluna (reordenação na mesma coluna)
+function updateColumnCards(payload: { columnId: string, cards: any[] }) {
+  const columnIndex = selectedBoard.value.columns.findIndex(col => col.id === payload.columnId);
+  if (columnIndex !== -1) {
+    const column = selectedBoard.value.columns[columnIndex];
+    if (column) {
+      column.cards = [...payload.cards];
+    }
+  }
+}
+
+// Função para atualizar o título de uma coluna
+function updateColumnTitle(payload: { columnId: string, title: string }) {
+  const columnIndex = selectedBoard.value.columns.findIndex(col => col.id === payload.columnId);
+  if (columnIndex !== -1 && selectedBoard.value.columns[columnIndex]) {
+    selectedBoard.value.columns[columnIndex].title = payload.title;
+    
+    // Aqui poderia ser adicionada uma chamada para API para salvar a alteração
+    // Exemplo: updateColumnApi(payload.columnId, { title: payload.title });
+  }
+}
+
+// Função para mover um card de uma coluna para outra
+function moveCard(payload: { cardId: string, fromColumnId: string, toColumnId: string, newIndex: number }) {
+  // Encontra a coluna de origem e o card
+  const fromColumnIndex = selectedBoard.value.columns.findIndex(col => col.id === payload.fromColumnId);
+  const toColumnIndex = selectedBoard.value.columns.findIndex(col => col.id === payload.toColumnId);
+  
+  if (fromColumnIndex === -1 || toColumnIndex === -1) return;
+  
+  // Encontra o card na coluna de origem
+  const fromColumn = selectedBoard.value.columns[fromColumnIndex];
+  const toColumn = selectedBoard.value.columns[toColumnIndex];
+  
+  if (!fromColumn || !toColumn) return;
+
+  const cardIndex = fromColumn.cards.findIndex(
+    card => card.id === payload.cardId
+  );
+  
+  if (cardIndex === -1) return;
+  
+  // Remove o card da coluna de origem
+  const [card] = fromColumn.cards.splice(cardIndex, 1);
+  
+  if (!card) return;
+  
+  // Adiciona o card na coluna de destino na posição correta
+  toColumn.cards.splice(payload.newIndex, 0, card);
+}
+
+// Observador para quando o board selecionado muda
+watch(selectedBoard, () => {
+  // Lógica adicional quando o board mudar
+  cardDetailsVisible.value = false;
+  selectedCardId.value = undefined;
+  isEditingBoardName.value = false;
+});
+</script>
+
+<style scoped>
+.kanban-board {
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  width: 100%;
+  position: relative;
+}
+
+.kanban-content {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: calc(100% - 60px); /* Ajustado para dar mais espaço ao conteúdo */
+  padding-bottom: 20px; /* Aumentado o espaço entre o conteúdo e a barra de rolagem horizontal */
+}
+
+.add-column-container {
+  min-width: 300px;
+  width: 320px;
+  flex: 0 0 auto;
+  border: 1px solid #ccc;
+  height: fit-content;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  margin-top: 30px;
+}
+
+/* Estiliza a barra de rolagem horizontal */
+.kanban-content::-webkit-scrollbar {
+  height: 8px;
+}
+
+.kanban-content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.kanban-content::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.board-name-edit {
+  max-width: 400px;
+  min-width: 200px;
+}
+
+.select-board {
+  width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .row.items-center.no-wrap {
+    flex-wrap: nowrap !important;
+  }
+}
+</style> 

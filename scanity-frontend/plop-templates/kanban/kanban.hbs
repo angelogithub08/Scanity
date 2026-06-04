@@ -1,0 +1,51 @@
+export interface CardAssignee {
+  id: string;
+  name: string;
+  avatar: string;
+  email?: string;
+  phone?: string;
+  document?: string;
+}
+
+export interface KanbanCard {
+  id: string;
+  title: string;
+  description: string;
+  priority?: 'Baixa' | 'Média' | 'Alta' | undefined;
+  assignee?: CardAssignee | undefined;
+}
+
+export interface KanbanColumn {
+  id: string;
+  title: string;
+  cards: KanbanCard[];
+}
+
+export interface KanbanBoard {
+  id: string;
+  name: string;
+  columns: KanbanColumn[];
+}
+
+export interface Comment {
+  id: string;
+  user?: CardAssignee | undefined;
+  content: string;
+  date: string;
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+  size: string;
+  date: string;
+}
+
+export interface Activity {
+  id: string;
+  action: string;
+  description: string;
+  date: string;
+  icon: string;
+}

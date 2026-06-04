@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { generateHash } from './utils/encrypt.util';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -51,8 +50,5 @@ import { ChatModule } from './modules/chat/chat.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {
-  constructor() {
-    void generateHash('123456').then(console.log);
-  }
+export class AppModule {}
 }

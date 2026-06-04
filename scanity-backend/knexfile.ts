@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import type { Knex } from 'knex';
 
-const defaultDB = 'postgresql://postgres:postgres@localhost:5433/tests';
+const defaultDB = 'postgresql://postgres:postgres@localhost:5432/tests';
 
 const config: { [key: string]: Knex.Config } = {
   development: {
